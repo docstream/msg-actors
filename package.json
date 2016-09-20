@@ -1,0 +1,29 @@
+{
+  "name": "gitlab-worker",
+  "version": "1.0.0",
+  "description": "pulls jobs from kue and uses gitlab res API",
+  "scripts": {
+    "start": "node_modules/.bin/coffee worker.coffee",
+    "test": "mocha --compilers coffee:coffee-script/register --require coffee-coverage-loader"
+  },
+  "keywords": [
+    "vcs",
+    "queue",
+    "kue",
+    "git",
+    "gitlab"
+  ],
+  "author": "dynnamitt",
+  "license": "ISC",
+  "dependencies": {
+    "coffee-script": "^1.10.0",
+    "kue": "^0.11.1",
+    "lodash": "^4.16.0",
+    "node-gitlab": "^1.3.0"
+  },
+  "devDependencies": {
+    "coffee-coverage": "^1.0.1",
+    "mocha": "^3.0.2",
+    "should": "^11.1.0"
+  }
+}
