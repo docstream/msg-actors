@@ -1,3 +1,3 @@
 # gitlab-worker
 
-nodejs kue worker, updating gitlab w content
+nodejs queue worker, updating gitlab w content
