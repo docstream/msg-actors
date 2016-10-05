@@ -1,18 +1,6 @@
 version: '2'
 services:
   
-
-  sut:
-    build: .
-    command: x
-    environment:
-      - AMQP_URL=amqp://queue
-    volumes:
-      - .:/app # use when DEVELOPING
-      
-    depends_on:
-      - queue
-
   queue:
     image: rabbitmq:3-management
     ports:
