@@ -1,9 +1,14 @@
+# 
+#  NB !
+#    
+#    PREFER not to use if testing together w ed's docker-composition
+
 version: '2'
 services:
   
   queue:
     image: rabbitmq:3-management
     ports:
-      - 18881:15672 # http
-      - 5672:5672
+      - 18882:15672 # http
+      - 5673:5672  # amqp-socket
 

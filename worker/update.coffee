@@ -3,7 +3,9 @@ path = require 'path'
 hare = require 'hare'
 gitlab = require 'node-gitlab'
 async = require 'async'
+YAML = require 'json2yaml'
 amqp = require 'amqp' # via hare !
+figlet = require 'figlet'
 
 workerName = path.basename __filename, '.coffee'
 
@@ -28,11 +30,12 @@ conn = amqp.createConnection {url: AMQP_URL},
   reconnectExponentialLimit: 120000
   reconnectBackoffTime: 1000
 
-conn.on 'error', (e) ->
-  console.error "RABBIT Connection ERR;",e
+conn.on 'error', (err) ->
+  console.error "RABBIT Connection ERR;"
+  console.error YAML.stringify err
 
-conn.on 'close', (a) ->
-  console.error "RABBIT CLOSED! ",a
+conn.on 'close', (hadError) ->
+  console.error "RABBIT CLOSED! ", "(errors)" if hadError
 
 conn.on 'timeout',  ->
   console.error "RABBIT TIMEOUT"
@@ -49,20 +52,32 @@ gClient = gitlab.create
 # glue
 worker = (msg, headers, deliveryInfo, cb) ->
   console.log "msg", msg
+
+  
   cb()
 
 # init
 async.parallel [
   (done) ->
+    # FIXME wait a 'while'
     gClient.projects.list {}, done
   (done) ->
     conn.on 'ready', done
   ], (err,res) ->
     if err
-      console.error "ABORTING. IO connect test ERR:",err
+      console.error "ABORTING. IO connect test ERR:"
+      console.error (YAML.stringify err)
       process.exit 1
     else
-      console.log "IO connection test ok. ",res
+      [projects,pubEv] = res
+      projects_ = _.map projects, (p) -> { id:p.id, name:p.name }
+      
+      console.log ( figlet.textSync workerName,
+        horizontalLayout: 'default'
+        verticalLayout: 'default'
+      )
+
+      console.log projects_
       updatesQ.subscribe worker
 
 
