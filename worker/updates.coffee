@@ -24,18 +24,18 @@ context.on 'ready', ->
 
   # debug socket
   sub.connect pubName,'*', ->
-    console.log "〉:SUB [#{pubName}] open..."
+    console.log "〉:SUB [#{pubName}] listening..."
     sub.setEncoding 'utf8'
     H sub
       .each (x) ->
-        console.log " :SUB: #{pubName} (debug) ",x
+        console.log " {SUB msg} #{pubName} (debug) ",x
 
   pub.connect pubName, ->
-    console.log "〉:PUB [#{pubName}] open..."
+    console.log "〉:PUB [#{pubName}] ready..."
 
     wrk.connect qName, ->
       wrk.setEncoding 'utf8'
-      console.log "〉:WORKER [#{qName}] waiting..."
+      console.log "〉:WORKER [#{qName}] listening..."
       gitlab (err,gClient) ->
         if err
           throw err
@@ -43,9 +43,7 @@ context.on 'ready', ->
           H wrk
             .map JSON.parse
             .map (x) ->
-              
-              contentBuf = new Buffer x.content, 'base64'
-              x.contentDecoded = contentBuf.toString()
+              x.contentDecoded = (new Buffer x.content, 'base64').toString()
               delete x.content # no need for that
               x
             .each (x) ->
