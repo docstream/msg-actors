@@ -1,4 +1,5 @@
-_ = require "lodash"
+H = require "highland"
+_ = require 'lodash'
 gitlab = require 'node-gitlab'
 
 module.exports = (id, cb) ->
