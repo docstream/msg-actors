@@ -13,7 +13,7 @@ pubName = "feedback:v1"
 
 context = rabbitJs.createContext AMQP_URL
 
-console.log "Worker [[#{workerID}]] starting"
+console.log "Worker [[#{workerID}]] starting, PUBing back into [[#{pubName}]]"
 
 
 # ----------------------------------------
@@ -26,9 +26,8 @@ serialize = (obj) ->
   new Buffer (JSON.stringify obj)
 
 unwrapBase64Content = (body) ->
-  body.contentDecoded = (new Buffer body.content, 'base64').toString()
-  delete body.content # no need for that
-  body
+   body.content = (new Buffer body.content, 'base64').toString()
+   body
 
 unwrapBookId = (body) ->
   body.bookId = _.take (body.title.split '/')
@@ -67,12 +66,16 @@ update = (body,cb) ->
     id: body.gitlab.project.id
     file_path: body.filepath
     branch_name: "master"
-    encoding: "UTF-8"
-    content: body.contentDecoded
-    commit_message: "user #{body.userName}. file #{body.filepath}. worker [[#{workerID}]]"
+    # encoding: "base64" not working?
+    content: body.content
+    commit_message: "
+      User: '#{body.userName}'. File: '#{body.filepath}'. Worker: [[#{workerID}]]\n\n
+      Message uuid: '#{body.id}'
+      "
   , (err,resp) ->
     if err
-      console.error "!GITLAB update err;",er
+      console.error "!GITLAB update err;",err
+      err.msgId = body.id
       cb err
     else
       console.log "resp is",resp
@@ -81,16 +84,17 @@ update = (body,cb) ->
 # all well
 # [this] must be worker socket (ctx)
 ack = (body) ->
-  console.log "[#{workerID} now ACKing ",body.id
+  console.log "SUCCESS [#{workerID}] now ACKing ",body.id
   @ack()
   body
+  
 
 # [this] MUST be a connected PUB socket !
 publishSuccess = (body) ->
   @publish workerID , serialize
     id : body.id
     workerID : workerID
-    status: "HAPPY"
+    status: "SUCCESS"
   body
 
 # [this] MUST be a connected PUB socket !
@@ -100,14 +104,20 @@ publishError = (err,push) ->
     workerID: workerID
     status: "ERROR"
     errMsg: err.message
+  push err
 
-
+# not all well
+# [this] must be worker socket (ctx)
+ackAfterErr = (err) ->
+  console.error "!FAILED [#{workerID}] now ACKing ",err.msgId
+  @ack()
 
 
 #---------------------------------------
 #   events
 #=======================================
 
+# FIXME close all context if SIGINT
 
 context.on 'error', (err) ->
   console.error 'AMQP CTX err;',err
@@ -140,7 +150,7 @@ context.on 'ready', ->
         if err
           throw err
         else
-          # --------------- main chain ----------------------
+          # --------------- main chain -----------------
           H wrk
             .map JSON.parse
             .map unwrapBase64Content
@@ -148,6 +158,7 @@ context.on 'ready', ->
             .map unwrapFQBI
             .flatMap H.wrapCallback (lookupProject.bind gClient)
             .flatMap H.wrapCallback (update.bind gClient)
-            .errors (publishError.bind pub)
             .map (ack.bind wrk)
+            .errors (publishError.bind pub)
+            .errors (ackAfterErr.bind wrk)
             .each (publishSuccess.bind pub)
