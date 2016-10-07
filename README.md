@@ -1,4 +1,4 @@
-# gitlab-worker
+# gitlab-workerS
 
 nodejs queue worker, updating gitlab w content
 
