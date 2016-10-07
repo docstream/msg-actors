@@ -15,3 +15,7 @@ Se pack-ed
     #  GITLAB_URL=http://localhost:10080/api/v3
     #  AMQP_URL=amqp://127.0.0.1:5672 
     coffee worker/updates.coffee
+
+## TODO
+
+tester
