@@ -1,7 +1,7 @@
 _ = require "lodash"
 gitlab = require 'node-gitlab'
 
-module.exports = (cb) ->
+module.exports = (id, cb) ->
 
   GITLAB_URL = process.env.GITLAB_URL or 'http://localhost:10080/api/v3'
   GITLAB_TOKEN = process.env.GITLAB_TOKEN
@@ -19,7 +19,7 @@ module.exports = (cb) ->
     privateToken: GITLAB_TOKEN
   
   # init
-  console.log "- GITLAB Testing starting ..."
+  console.log "- GITLAB Testing starting;"
   
   gClient.projects.list {}, (err,ps) ->
     if err
@@ -28,7 +28,7 @@ module.exports = (cb) ->
       cb err
     else
       ps_ = _.map ps, (p) -> { id:p.id, name:p.name }
-      console.log " \\__ ok pid:%d",process.pid ,ps_
+      console.log "- GITLAB test resp ok from worker [[#{id}]]"
       cb null,gClient
 
 

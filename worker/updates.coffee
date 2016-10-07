@@ -12,31 +12,42 @@ pubName = "feedback:v1"
 
 context = rabbitJs.createContext AMQP_URL
 
+console.log "Worker [[#{workerID}]] starting"
+
+
 serialize = (obj) ->
   new Buffer (JSON.stringify obj)
   # new isnt FUNCTIONAL , otherwise we use H.compose
 
+#---------------------------------------
+#   events
+#=======================================
+
+
+context.on 'error', (err) ->
+  console.error 'AMQP CTX err;',err
+
 context.on 'ready', ->
-  console.log "AMQP_URL:#{AMQP_URL} ok"
+  console.log "AMQP: #{AMQP_URL} ok"
   wrk = context.socket 'WORKER'
   pub = context.socket 'PUB'
   sub = context.socket 'SUB'
 
   # debug socket
   sub.connect pubName,'*', ->
-    console.log "〉:SUB [#{pubName}] listening..."
+    console.log "〉SUB [#{pubName}] listening..."
     sub.setEncoding 'utf8'
     H sub
       .each (x) ->
-        console.log " {SUB msg} #{pubName} (debug) ",x
+        console.info " {SUB msg} #{pubName} (debug) ::: ",x
 
   pub.connect pubName, ->
-    console.log "〉:PUB [#{pubName}] ready..."
+    console.log "〉PUB [#{pubName}] ready..."
 
     wrk.connect qName, ->
       wrk.setEncoding 'utf8'
-      console.log "〉:WORKER [#{qName}] listening..."
-      gitlab (err,gClient) ->
+      console.log "〉WORKER [#{qName}] listening..."
+      gitlab workerID, (err,gClient) ->
         if err
           throw err
         else
