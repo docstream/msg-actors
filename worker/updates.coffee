@@ -9,7 +9,7 @@ H = require 'highland'
 qName = path.basename __filename, '.coffee'
 machineName = require("os").hostname()
 workerID = "#{qName}:#{machineName}:#{process.pid}"
-pubName = "feedback:v1"
+pubName = "amq.fanout"
 
 context = rabbitJs.createContext AMQP_URL
 
@@ -91,14 +91,20 @@ ack = (body) ->
 
 # [this] MUST be a connected PUB socket !
 publishSuccess = (body) ->
+  # TODO use _.expand and remove content .. maybe
   @publish workerID , serialize
     id : body.id
+    FQBI: body.FQBI
+    domain: body.domain
+    bookid: body.bookid
+    filepath: body.filepath
     workerID : workerID
     status: "SUCCESS"
   body
 
 # [this] MUST be a connected PUB socket !
 publishError = (err,push) ->
+  # FIXME add more meta from body , see TODO above !
   @publish workerID, serialize
     id : err.msgId
     workerID: workerID
