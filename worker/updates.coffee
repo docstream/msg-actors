@@ -113,12 +113,14 @@ publishSuccess = (body) ->
 
 # [this] MUST be a connected PUB socket !
 publishError = (err,push) ->
-  # FIXME add more meta from body , see TODO above !
-  @publish workerID, serialize
+
+  msg =
     id : err.msgId
     workerID: workerID
     status: "ERROR"
     errMsg: err.message
+
+  @publish workerID, serialize msg
   push err
 
 # not all well
