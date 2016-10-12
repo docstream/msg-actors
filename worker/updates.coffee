@@ -22,6 +22,10 @@ console.log "Worker [[#{workerID}]] starting, PUBing back into [[#{pubName}]]"
 #
 # ----------------------------------------
 
+# NOTE Schema can be found here
+#   ed/src/main/java/no/ds/common/io/QPersistor.java#putContent()
+
+
 serialize = (obj) ->
   new Buffer (JSON.stringify obj)
 
