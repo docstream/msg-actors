@@ -95,7 +95,10 @@ ack = (body) ->
 
 # [this] MUST be a connected PUB socket !
 publishSuccess = (body) ->
-  # TODO use _.expand and remove content .. maybe
+
+  # NB Here we pick each prop explicitly to state CLEARLY
+  # the schema for SUBscribers
+
   @publish workerID , serialize
     id : body.id
     FQBI: body.FQBI
