@@ -99,7 +99,7 @@ publishSuccess = (body) ->
   # NB Here we pick each prop explicitly to state CLEARLY
   # the schema for SUBscribers
 
-  @publish workerID , serialize
+  msg =
     id : body.id
     FQBI: body.FQBI
     domain: body.domain
@@ -107,6 +107,8 @@ publishSuccess = (body) ->
     filepath: body.filepath
     workerID : workerID
     status: "SUCCESS"
+
+  @publish workerID , serialize msg
   body
 
 # [this] MUST be a connected PUB socket !
