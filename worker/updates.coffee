@@ -144,8 +144,8 @@ context.on 'ready', ->
   console.log "AMQP: #{AMQP_URL} ok, creating sockets:"
 
   wrk = context.socket 'WORKER'
-  pub = context.socket 'PUB'
-  sub = context.socket 'SUB'
+  pub = context.socket 'PUB',noCreate:yes
+  sub = context.socket 'SUB',noCreate:yes
 
   # debug socket
   sub.connect pubName,'*', ->
