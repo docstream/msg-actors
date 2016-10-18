@@ -11,3 +11,5 @@ RUN npm i --silent
 
 ADD . /app
 # FIXME RUN npm run test
+
+CMD ./node_modules/.bin/coffee worker/updates.coffee
