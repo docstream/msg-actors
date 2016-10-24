@@ -40,7 +40,7 @@ unwrapBookId = (body) ->
 
 # Fully Qualified Book Id
 unwrapFQBI = (body) ->
-  body.FQBI = body.domain + "__" + body.bookId
+  body.FQBI = body.domain + "__epub." + body.bookId
   body
 
 # async
