@@ -30,8 +30,8 @@ serialize = (obj) ->
   new Buffer (JSON.stringify obj)
 
 unwrapBase64Content = (body) ->
-   body.content = (new Buffer body.content, 'base64').toString()
-   body
+  body.content = (new Buffer body.content, 'base64').toString()
+  body
 
 unwrapBookId = (body) ->
   body.bookId = _.take (body.title.split '/')
@@ -102,7 +102,6 @@ publishSuccess = (body) ->
 
   msg =
     id : body.id
-    class: qName # updates
     domain: body.domain
     bookid: body.bookid
     filepath: body.filepath
@@ -119,7 +118,6 @@ publishError = (err,push) ->
   msg =
     id : err.msgId
     domain: err.domain
-    class: qName
     workerID: workerID
     status: "ERROR"
     errMsg: err.message
