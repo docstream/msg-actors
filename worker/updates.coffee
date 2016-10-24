@@ -80,6 +80,7 @@ update = (body,cb) ->
     if err
       console.error "!GITLAB update err;",err
       err.msgId = body.id
+      err.domain = body.domain
       cb err
     else
       console.log "resp is",resp
@@ -101,11 +102,12 @@ publishSuccess = (body) ->
 
   msg =
     id : body.id
-    FQBI: body.FQBI
+    class: qName # updates
     domain: body.domain
     bookid: body.bookid
     filepath: body.filepath
     workerID : workerID
+    FQBI: body.FQBI
     status: "SUCCESS"
 
   @publish workerID , serialize msg
@@ -116,6 +118,8 @@ publishError = (err,push) ->
 
   msg =
     id : err.msgId
+    domain: err.domain
+    class: qName
     workerID: workerID
     status: "ERROR"
     errMsg: err.message
@@ -136,8 +140,15 @@ ackAfterErr = (err) ->
 
 # FIXME close all context if SIGINT
 
-context.on 'error', (err) ->
+context.on 'error', (err) =>
   console.error 'AMQP CTX err;',err
+
+  if err.code == 'ECONNREFUSED'
+    console.error "ABORTING"
+    process.exit 1 # make sure we can restart AT ONCE
+  else
+    console.log "code :", err.code
+    
 
 context.on 'ready', ->
 

@@ -1,0 +1,16 @@
+{
+  "id" : "djsah984r=-/32",
+  "domain" : "demo.readin.no",
+  "title" : "some-chunk.html",
+  "userName" : "per",
+  "sessionId" : "2134y998734y",
+  "userAdmin" : "no",
+  "contentType" : "text/xhtml",
+  "userLang" : "no-nb",
+  "content" : "base64sadhjgsdhjfgsdjhfgsdhjgfjhsdgf....",
+  "_links": {
+    "schema" : {
+      "href" : "ed/src/main/java/no/ds/common/io/QPersistor.java#putContent()"
+    }
+  }
+}
