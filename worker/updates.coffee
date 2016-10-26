@@ -9,7 +9,7 @@ H = require 'highland'
 qName = path.basename __filename, '.coffee'
 machineName = require("os").hostname()
 workerID = "#{qName}:#{machineName}:#{process.pid}"
-pubName = "amq.fanout"
+pubName = "amq.topic"
 
 context = rabbitJs.createContext AMQP_URL
 
