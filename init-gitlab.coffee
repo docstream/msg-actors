@@ -24,13 +24,13 @@ module.exports = (id, cb) ->
   
   gClient.projects.list {}, (err,ps) ->
     if err
-      console.error "GITLAB connect test ERR"
-      console.error err
-      cb err
+      console.warn "GITLAB connect test ERR",err.message
+      console.warn ".......................... "
     else
       ps_ = _.map ps, (p) -> { id:p.id, name:p.name }
       console.log "- GITLAB test resp ok from worker [[#{id}]]"
-      cb null,gClient
+
+    cb gClient
 
 
 

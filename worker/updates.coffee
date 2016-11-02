@@ -109,7 +109,7 @@ publishSuccess = (body) ->
     FQBI: body.FQBI
     status: "SUCCESS"
 
-  @publish workerID , serialize msg
+  @publish 'update.gitlab' , serialize msg
   body
 
 # [this] MUST be a connected PUB socket !
@@ -122,7 +122,7 @@ publishError = (err,push) ->
     status: "ERROR"
     errMsg: err.message
 
-  @publish workerID, serialize msg
+  @publish 'update.gitlab' , serialize msg
   push err
 
 # not all well
@@ -157,8 +157,8 @@ context.on 'ready', ->
   sub = context.socket 'SUB',noCreate:yes
 
   # debug socket
-  sub.connect pubName,'*', ->
-    console.log "〉SUB [#{pubName}] listening..."
+  sub.connect pubName,'#', ->
+    console.log "〉SUB # debugger [#{pubName}] listening..."
     sub.setEncoding 'utf8'
     H sub
       .each (message) ->
@@ -171,11 +171,8 @@ context.on 'ready', ->
       wrk.setEncoding 'utf8'
       console.log "〉WORKER [#{qName}] listening..."
 
-      gitlab workerID, (err,gClient) ->
+      gitlab workerID, (gClient) ->
 
-        if err
-          throw err
-        else
           # --------------- main chain -----------------
           H wrk
             .map JSON.parse
