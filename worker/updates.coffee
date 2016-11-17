@@ -157,12 +157,12 @@ context.on 'ready', ->
   sub = context.socket 'SUB',noCreate:yes
 
   # debug socket
-  sub.connect pubName,'#', ->
-    console.log "〉SUB # debugger [#{pubName}] listening..."
-    sub.setEncoding 'utf8'
-    H sub
-      .each (message) ->
-        console.info " {SUB msg} #{pubName} (debug) ::: ",message
+  # sub.connect pubName,'#', ->
+  #   console.log "〉SUB # debugger [#{pubName}] listening..."
+  #   sub.setEncoding 'utf8'
+  #   H sub
+  #     .each (message) ->
+  #       console.info " {SUB msg} #{pubName} (debug) ::: ",message
 
   pub.connect pubName, ->
     console.log "〉PUB [#{pubName}] ready..."
@@ -172,9 +172,10 @@ context.on 'ready', ->
       console.log "〉WORKER [#{qName}] listening..."
 
       gitlab workerID, (gClient) ->
-
+          
           # --------------- main chain -----------------
           H wrk
+            .doto -> console.log "new MSG! ..."
             .map JSON.parse
             .map unwrapBase64Content
             .map unwrapBookId
