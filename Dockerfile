@@ -2,6 +2,7 @@ FROM node:4.4.4
 
 ENV DOCKERFILE_REFRESHED 2016-17-3T10:50
 
+ENV AMQP_URL amqp://queue
 # deprecated, should use user/pwd
 ENV GITLAB_TOKEN aBBa+1/234+etcetcetc
 
