@@ -35,7 +35,7 @@ unwrapBase64Content = (body) ->
 
 unwrapBookId = (body) ->
   body.bookId = _.take (body.title.split '/')
-  body.filepath = _.tail (body.title.split '/')
+  body.filepath = (_.tail (body.title.split '/')).join '/'
   body
 
 # Fully Qualified Book Id
