@@ -50,7 +50,7 @@ lookupProject = (body,cb) ->
     if err
       console.error "! GITLAB err:", err
       # FIXME Make a new Stream ?
-      err.msgId = body.id
+      err.body = body
       cb err
     else
       project = _.find projects, (p)-> p.name==body.FQBI
@@ -60,7 +60,7 @@ lookupProject = (body,cb) ->
         cb null, body
       else
         err = new Error "cannot find an GITLAB id for projectName #{body.FQBI}"
-        err.msgId = body.id
+        err.body = body
         cb err
 
 # async 
@@ -79,8 +79,7 @@ update = (body,cb) ->
   , (err,resp) ->
     if err
       console.error "!GITLAB update err;",err
-      err.msgId = body.id
-      err.domain = body.domain
+      err.body = body
       cb err
     else
       console.log "resp is",resp
@@ -105,8 +104,8 @@ publishSuccess = (body) ->
     domain: body.domain
     bookid: body.bookid
     filepath: body.filepath
-    workerID : workerID
     FQBI: body.FQBI
+    workerID : workerID
     status: "SUCCESS"
 
   @publish 'update.gitlab' , serialize msg
@@ -116,8 +115,11 @@ publishSuccess = (body) ->
 publishError = (err,push) ->
 
   msg =
-    id : err.msgId
-    domain: err.domain
+    id : err.body.msgId
+    domain: err.body.domain
+    bookid: err.body.bookid
+    filepath: err.body.filepath
+    FQBI: err.body.FQBI
     workerID: workerID
     status: "ERROR"
     errMsg: err.message
@@ -128,7 +130,7 @@ publishError = (err,push) ->
 # not all well
 # [this] must be worker socket (ctx)
 ackAfterErr = (err) ->
-  console.error "!FAILED [#{workerID}] now ACKing ",err.msgId
+  console.error "!FAILED [#{workerID}] now ACKing ", err.body.id
   @ack()
 
 
