@@ -48,7 +48,7 @@ unwrapFQBI = (body) ->
 lookupProject = (body,cb) ->
   @projects.list {}, (err,projects) ->
     if err
-      console.err "! GITLAB err", err
+      console.error "! GITLAB err:", err
       # FIXME Make a new Stream ?
       err.msgId = body.id
       cb err
