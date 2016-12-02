@@ -34,7 +34,8 @@ unwrapBase64Content = (body) ->
   body
 
 unwrapBookId = (body) ->
-  body.bookId = _.take (body.title.split '/')
+# adapt since EDD dont give fine info
+  body.bookId = (body.title.split '/')[0]
   body.filepath = (_.tail (body.title.split '/')).join '/'
   body
 
@@ -102,7 +103,7 @@ publishSuccess = (body) ->
   msg =
     id : body.id
     domain: body.domain
-    bookid: body.bookid
+    bookId: body.bookId
     filepath: body.filepath
     FQBI: body.FQBI
     workerID : workerID
@@ -117,7 +118,7 @@ publishError = (err,push) ->
   msg =
     id : err.body.msgId
     domain: err.body.domain
-    bookid: err.body.bookid
+    bookId: err.body.bookId
     filepath: err.body.filepath
     FQBI: err.body.FQBI
     workerID: workerID
