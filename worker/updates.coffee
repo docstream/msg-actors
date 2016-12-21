@@ -116,7 +116,7 @@ publishSuccess = (body) ->
 publishError = (err,push) ->
 
   msg =
-    id : err.body.msgId
+    id : err.body.id
     domain: err.body.domain
     bookId: err.body.bookId
     filepath: err.body.filepath
