@@ -3,3 +3,8 @@ coverage
 *swp
 *swo
 _GITLAB.env
+
+# Elastic Beanstalk Files
+.elasticbeanstalk/*
+!.elasticbeanstalk/*.cfg.yml
+!.elasticbeanstalk/*.global.yml
