@@ -1,0 +1,17 @@
+machine:
+  services:
+    - docker
+  environment:
+    AWS_ECR : 945120944185.dkr.ecr.eu-central-1.amazonaws.com
+    APP : gitlab-workers
+
+dependencies:
+  override:
+    - docker info
+    - docker build --rm=false -t $AWS_ECR/$APP:$CIRCLE_BRANCH .
+
+deployment:
+  prod:
+    branch: [master,dev]
+    commands:
+      - aws/deploy.sh
