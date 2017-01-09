@@ -11,7 +11,7 @@ module.exports = (id, cb) ->
     console.error "no env GITLAB_TOKEN set. aborting"
     process.exit 1
 
-  console.info "GITLAB: #{GITLAB_URL} | #{GITLAB_TOKEN}"
+  console.info "GITLAB: #{GITLAB_URL} | #{GITLAB_TOKEN[...3]}****************"
 
 
   # output

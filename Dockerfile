@@ -3,12 +3,12 @@ FROM node:4.7
 ENV DOCKERFILE_REFRESHED 2017-10-7
 
 ENV AMQP_URL amqp://queue
-# deprecated, should use user/pwd
-ENV GITLAB_TOKEN aBBa+1/234+etcetcetc
+# TODO maybe should use user/pwd
+#ENV GITLAB_TOKEN aBBa+1/234+etcetcetc
 
-# connect to /session and grab TOKEN
-ENV GITLAB_USER some-user
-ENV GITLAB_PWD passordfortheyear
+# TODO maybe connect to /session and grab TOKEN
+#ENV GITLAB_USER some-user
+#ENV GITLAB_PWD passordfortheyear
 ENV GITLAB_URL http://gitlab/api/v3
 
 # NB! Use LTS version ALWAYS
