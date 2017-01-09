@@ -2,9 +2,7 @@
   "name": "gitlab-worker",
   "version": "1.0.0",
   "description": "pulls jobs from kue and uses gitlab res API",
-  "scripts": {
-    "test": "mocha --compilers coffee:coffee-script/register --require coffee-coverage-loader"
-  },
+  "scripts": { },
   "keywords": [
     "vcs",
     "queue",
