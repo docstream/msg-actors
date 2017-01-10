@@ -67,17 +67,24 @@ lookupProject = (body,cb) ->
 # async 
 # [this] must be bound to gitlab-client
 update = (body,cb) ->
+
+  # schema !!!
+  commitMsg =
+    appClass: "editor"
+    user: body.userName
+    filePath: body.filepath
+    workerId: workerID
+    msgId: body.id
+
   @repositoryFiles.update
     id: body.gitlab.project.id
     file_path: body.filepath
     branch_name: "master"
     # encoding: "base64" not working?
     content: body.content
-    commit_message: "
-      User: '#{body.userName}'. File: '#{body.filepath}'. Worker: [[#{workerID}]]\n\n
-      Message uuid: '#{body.id}'
-      "
+    commit_message: JSON.stringify commitMsg
   , (err,resp) ->
+
     if err
       console.error "!GITLAB update err;",err
       err.body = body
