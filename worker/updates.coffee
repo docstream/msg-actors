@@ -71,7 +71,9 @@ update = (body,cb) ->
   # schema !!!
   commitMsg =
     appClass: "editor"
-    user: body.userName
+    user:
+      displayName: body.userName
+      email: "not-impl"
     filePath: body.filepath
     workerId: workerID
     msgId: body.id
