@@ -3,6 +3,7 @@
   "domain" : "demo.readin.no",
   "title" : "some-chunk.html",
   "userName" : "per",
+  "userEmail" : "per@some.addr",
   "sessionId" : "2134y998734y",
   "userAdmin" : "no",
   "contentType" : "text/xhtml",

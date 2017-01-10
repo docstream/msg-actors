@@ -73,7 +73,7 @@ update = (body,cb) ->
     appClass: "editor"
     user:
       displayName: body.userName
-      email: "not-impl"
+      email: body.userEmail
     filePath: body.filepath
     workerId: workerID
     msgId: body.id
