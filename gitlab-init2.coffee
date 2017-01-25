@@ -6,10 +6,10 @@ tokens = {}
 parse = (data,suffix) ->
   try
     if data.trim().match /^\{/
-      console.log " \\_ JSON.parsing #{suffix} .."
+      console.log "  \\_ JSON.parsing #{suffix} .."
       _.assignIn tokens,(JSON.parse data)
     else
-      console.log " \\_ QS.parse #{suffix} .."
+      console.log "  \\_ QS.parse #{suffix} .."
       _.assignIn tokens,(qs.parse data.trim())
   catch err
     console.error "PARSE-ERR:\n",err
@@ -40,5 +40,5 @@ module.exports =
     base: GITLAB_URL
     commits : (pNo) ->
       "/projects/#{pNo}/repository/commits"
-    ownedProjects : () -> "/projects/owned"
+    ownedProjects : "/projects/owned"
 

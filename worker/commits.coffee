@@ -6,7 +6,8 @@ gitlab = (require '../gitlab-init2')
 
 assert gitlab.urls.base, "gitlab.urls.base empty!"
 
-axios = (require 'axios').create {
+axios_ = require 'axios'
+axios = axios_.create {
   baseURL: gitlab.urls.base
   timeout: 9000
 }
@@ -43,18 +44,19 @@ lookupProject = (body) ->
   
   console.log "Checking OWNED projects for [#{body.Workspace}] ..."
 
-  axios gitlab.urls.ownedProjects(),
+  axios.get gitlab.urls.ownedProjects,
     headers: (gitlab.headers body.Workspace)
   .then (resp) ->
     console.log "GET resp-status #{resp.status}"
-    body.gitlab =
-      project: resp.data
-    console.dir body.gitlab
-    axios.resolve body
+    ps = resp.data
+    console.log "Projects found: #{ps.length}x"
+    project = _.find ps, (p)-> p.name==body.FQBI
+    body.gitlab = { project: project }
+    Promise.resolve body
   .catch (err) ->
-    console.error "outch! ",err
+    console.error "p-outch! ",err
     err.body = body
-    axios.reject err
+    Promise.reject err
 
 # PROMISE !
 postCommit = (body) ->
@@ -63,16 +65,18 @@ postCommit = (body) ->
   commitMsg =
     appClass: "editor"
     user:
-      displayName: body.userName
-      email: body.userEmail
+      displayName: body.UserName
+      email: body.UserEmail
     files: _.map body.Actions,(a) -> { action:a.action, path:a.file_path }
     workerId: workerID
     msgId: body.JobId
 
-  url = gitlab.urls.commits body.gitlab.project.id
-  #ok?
+  url = (gitlab.urls.commits body.gitlab.project.id)
+  
+  console.log "POSTing to [#{url}] ..."
+
   axios.post url,
-    headers: gitlab.headers body.Workspace
+    headers: (gitlab.headers body.Workspace)
     data:
       # https://docs.gitlab.com/ce/api/commits.html#create-a-commit-with-multiple-files-and-actions 
       branch_name: 'master'
@@ -82,7 +86,11 @@ postCommit = (body) ->
     console.log "POST resp-status #{resp.status}"
     axios.resolve body
   .catch (err) ->
-    console.error "outch!"
+    console.error "c-outch! "
+    if err.response
+      console.error "STATUS:",err.response.status
+    else
+      console.error err.message
     err.body = body
     axios.reject err
   
@@ -181,10 +189,9 @@ context.on 'ready', ->
         .doto (bodyParsed) -> console.log "Keys: ", (_.keys bodyParsed).join '/'
         .map unwrapFQBI
         .map lookupProject
-        .map H # cast Promise-back-to-stream
-        .doto (b) -> console.log "keys 2: ", (_.keys b)
+        .flatMap H # cast Promise-back-to-stream
         .map postCommit
-        .map H # cast Promise-back-to-stream
+        .flatMap H # cast Promise-back-to-stream
         .map (ack.bind wrk)
         .errors (publishError.bind pub)
         .errors (ackAfterErr.bind wrk)
