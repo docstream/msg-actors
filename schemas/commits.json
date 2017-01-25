@@ -1,0 +1,30 @@
+{
+  "UserName": "Kjetil Flovild-Midtlie",
+  "Workspace": "demo.readin.no",
+  "EpubId" : "/tek",
+  "SessionId": "UTa3ri_Fhwrq9cy2bclNgXb7a3EzCP4Z",
+  "UserEmail": "kjetil.midtlie@gmail.com",
+  "JobId": "0a722576-27a2-4b29-91ce-235c14b8ba85",
+  "Actions": [
+    {
+      "content": null,
+      "file_path": "be2010122194421843d1e3.xhtml",
+      "action": "delete"
+    },
+    {
+      "content": "PD94bWwgdmViY292ZXIiLz4KICC9ndWlkZT4KPC9wYWNrYWdlPg.........",
+      "file_path": "content.opf",
+      "action": "update"
+    },
+    {
+      "content": "PD94bWwgdmVyc2lvbj0iMS4wgoPC9ib2R5Pgo8L2h0bWw+Cg..........",
+      "file_path": "__toc__.xhtml",
+      "action": "update"
+    }
+  ],
+  "_links" : {
+    "schema" : {
+      "href" : "ed/src/main/java/no/ds/persist/Commits#queueCommitActions()"
+    }
+  }
+ }

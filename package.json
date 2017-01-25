@@ -2,7 +2,7 @@
   "name": "gitlab-worker",
   "version": "1.0.0",
   "description": "pulls jobs from kue and uses gitlab res API",
-  "scripts": { },
+  "scripts": {},
   "keywords": [
     "vcs",
     "queue",
@@ -12,6 +12,7 @@
   "author": "dynnamitt",
   "dependencies": {
     "async": "^2.0.1",
+    "axios": "^0.15.3",
     "coffee-script": "^1.10.0",
     "figlet": "^1.2.0",
     "hare": "^1.0.0",
