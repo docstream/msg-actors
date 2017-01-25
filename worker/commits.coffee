@@ -1,10 +1,15 @@
 AMQP_URL = process.env.AMQP_URL or 'amqp://127.0.0.1:5672'
 
+assert = require 'assert'
 path = require 'path'
 gitlab = (require '../gitlab-init2')
-axios = (require 'axios').create
-  baseUrl: gitlab.baseURL
+
+assert gitlab.urls.base, "gitlab.urls.base empty!"
+
+axios = (require 'axios').create {
+  baseURL: gitlab.urls.base
   timeout: 9000
+}
 rabbitJs = require 'rabbit.js'
 _ = require 'lodash'
 H = require 'highland'
@@ -13,16 +18,13 @@ qName = path.basename __filename, '.coffee'
 machineName = require("os").hostname()
 workerID = "#{qName}:#{machineName}:#{process.pid}"
 pubName = "amq.topic"
-pubKey = qName.replace /s$/,''
+pubKeyPrefix = "gitlab.#{qName.replace /s$/,''}."
 
 context = rabbitJs.createContext AMQP_URL
 console.log "Worker [[#{workerID}]] starting, PUBing back into [[#{pubName}]]"
 
-
 # ----------------------------------------
-#
 #      g l u e
-#
 # ----------------------------------------
 
 # NOTE Schema ref in schemas DIR
@@ -30,21 +32,19 @@ console.log "Worker [[#{workerID}]] starting, PUBing back into [[#{pubName}]]"
 serialize = (obj) ->
   new Buffer (JSON.stringify obj)
 
-# unwrapBase64Content = (body) ->
-#   body.content = (new Buffer body.content, 'base64').toString()
-#   body
-
 # Fully Qualified Book Id
 unwrapFQBI = (body) ->
-  body.EpubId = EpubId.replace /^\//,''
+  body.EpubId = body.EpubId.replace /^\// , ''
   body.FQBI = body.Workspace + "__epub." + body.EpubId
   body
 
 # PROMISE !
 lookupProject = (body) ->
+  
+  console.log "Checking OWNED projects for [#{body.Workspace}] ..."
 
   axios gitlab.urls.ownedProjects(),
-    headers: gitlab.headers body.Workspace
+    headers: (gitlab.headers body.Workspace)
   .then (resp) ->
     console.log "GET resp-status #{resp.status}"
     body.gitlab =
@@ -52,7 +52,7 @@ lookupProject = (body) ->
     console.dir body.gitlab
     axios.resolve body
   .catch (err) ->
-    console.error "outch!"
+    console.error "outch! ",err
     err.body = body
     axios.reject err
 
@@ -60,7 +60,7 @@ lookupProject = (body) ->
 postCommit = (body) ->
 
   # schema !! for external μs's :
-   commitMsg =
+  commitMsg =
     appClass: "editor"
     user:
       displayName: body.userName
@@ -70,7 +70,7 @@ postCommit = (body) ->
     msgId: body.JobId
 
   url = gitlab.urls.commits body.gitlab.project.id
-
+  #ok?
   axios.post url,
     headers: gitlab.headers body.Workspace
     data:
@@ -85,38 +85,6 @@ postCommit = (body) ->
     console.error "outch!"
     err.body = body
     axios.reject err
-
-
-# async 
-# [this] must be bound to gitlab-client
-# update = (body,cb) ->
-
-#   # schema !!!
-#   commitMsg =
-#     appClass: "editor"
-#     user:
-#       displayName: body.userName
-#       email: body.userEmail
-#     filePath: body.filepath
-#     workerId: workerID
-#     msgId: body.id
-
-#   @repositoryFiles.update
-#     id: body.gitlab.project.id
-#     file_path: body.filepath
-#     branch_name: "master"
-#     # encoding: "base64" not working?
-#     content: body.content
-#     commit_message: JSON.stringify commitMsg
-#   , (err,resp) ->
-
-#     if err
-#       console.error "!GITLAB update err;",err
-#       err.body = body
-#       cb err
-#     else
-#       console.log "resp is",resp
-#       cb null,body
   
 # all well
 # [this] must be worker socket (ctx)
@@ -141,7 +109,7 @@ publishSuccess = (body) ->
     workerID : workerID
     status: "SUCCESS"
 
-  @publish "gitlab.#{pubKey}.success" , serialize msg
+  @publish "#{pubKeyPrefix}success" , serialize msg
   body
 
 # [this] MUST be a connected PUB socket !
@@ -157,7 +125,7 @@ publishError = (err,push) ->
     status: "ERROR"
     errMsg: err.message
 
-  @publish "gitlab.#{pubKey}.error" , serialize msg
+  @publish "#{pubKeyPrefix}error" , serialize msg
   push err
 
 # not all well
@@ -208,14 +176,15 @@ context.on 'ready', ->
           
       # --------------- main chain -----------------
       H wrk
-        .doto -> console.log "new MSG! ..."
+        .doto  -> console.log "new MSG.."
         .map JSON.parse
-        #.map unwrapBase64Content
-        #.map unwrapBookId
+        .doto (bodyParsed) -> console.log "Keys: ", (_.keys bodyParsed).join '/'
         .map unwrapFQBI
         .map lookupProject
-        .flatMap H # cast Promise-back-to-stream
-        .flatMap H.wrapCallback (update.bind gClient)
+        .map H # cast Promise-back-to-stream
+        .doto (b) -> console.log "keys 2: ", (_.keys b)
+        .map postCommit
+        .map H # cast Promise-back-to-stream
         .map (ack.bind wrk)
         .errors (publishError.bind pub)
         .errors (ackAfterErr.bind wrk)

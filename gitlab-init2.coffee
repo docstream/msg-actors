@@ -1,4 +1,5 @@
 _ = require 'lodash'
+qs = require 'querystring'
 
 tokens = {}
 
@@ -20,21 +21,23 @@ _.forEach process.env, (val,key) ->
     suffix = (key.replace /^G_TOKEN_/,'').toLowerCase()
     parse val,suffix
 
-console.log "GITLAB tokens:"
-console.dir tokens
 
 if (_.keys tokens).length == 0
   console.error "NO GITLAB TOKENS FOUND! Aborting"
   process.exit 1
+      
+console.log "GITLAB tokens:"
+console.dir tokens
 
 GITLAB_URL = process.env.GITLAB_URL or 'http://localhost:10080/api/v3'
+console.log "Gitlab baseURL: #{GITLAB_URL}"
 
 module.exports =
-  baseUrl: GITLAB_URL
   headers: (wrkSpc) ->
     "PRIVATE-TOKEN" : tokens[wrkSpc]
     "Content-Type" : "application/json"
   urls:
+    base: GITLAB_URL
     commits : (pNo) ->
       "/projects/#{pNo}/repository/commits"
     ownedProjects : () -> "/projects/owned"
