@@ -47,14 +47,13 @@ lookupProject = (body) ->
   axios.get gitlab.urls.ownedProjects,
     headers: (gitlab.headers body.Workspace)
   .then (resp) ->
-    console.log "GET resp-status #{resp.status}"
     ps = resp.data
-    console.log "Projects found: #{ps.length}x"
+    console.log "Gitlab projects found: #{ps.length} x"
     project = _.find ps, (p)-> p.name==body.FQBI
     body.gitlab = { project: project }
     Promise.resolve body
   .catch (err) ->
-    console.error "p-outch! ",err
+    console.error "rest1: outch!"
     err.body = body
     Promise.reject err
 
@@ -75,24 +74,25 @@ postCommit = (body) ->
   
   console.log "POSTing to [#{url}] ..."
 
+  actions_ = _.map body.Actions,(a) ->
+    if a.content
+      a.encoding = 'base64'
+    a
+
   axios.post url,
     headers: (gitlab.headers body.Workspace)
     data:
       # https://docs.gitlab.com/ce/api/commits.html#create-a-commit-with-multiple-files-and-actions 
       branch_name: 'master'
-      commit_message: JSON.stringify commitMsg
-      actions: body.Actions
+      commit_message: (JSON.stringify commitMsg)
+      actions: actions_
   .then (resp) ->
     console.log "POST resp-status #{resp.status}"
-    axios.resolve body
+    Promise.resolve body
   .catch (err) ->
-    console.error "c-outch! "
-    if err.response
-      console.error "STATUS:",err.response.status
-    else
-      console.error err.message
+    console.error "rest2: outch! "
     err.body = body
-    axios.reject err
+    Promise.reject err
   
 # all well
 # [this] must be worker socket (ctx)
@@ -122,7 +122,7 @@ publishSuccess = (body) ->
 
 # [this] MUST be a connected PUB socket !
 publishError = (err,push) ->
-
+  console.log "error msg to QUEUE:", err.message
   msg =
     id : err.body.JobId
     domain: err.body.Workspace
