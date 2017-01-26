@@ -1,1 +1,2 @@
 fjern node-gitlab som dep
+Legg til runit iom vi trenger 2 workers going
