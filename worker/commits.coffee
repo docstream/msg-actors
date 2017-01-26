@@ -1,19 +1,14 @@
 AMQP_URL = process.env.AMQP_URL or 'amqp://127.0.0.1:5672'
-
+fs = require 'fs'
 assert = require 'assert'
 path = require 'path'
 gitlab = (require '../gitlab-init2')
-
-assert gitlab.urls.base, "gitlab.urls.base empty!"
-
-axios_ = require 'axios'
-axios = axios_.create {
-  baseURL: gitlab.urls.base
-  timeout: 9000
-}
+rp = require 'request-promise'
 rabbitJs = require 'rabbit.js'
 _ = require 'lodash'
 H = require 'highland'
+
+assert gitlab.urls.base, "gitlab.urls.base empty!"
 
 qName = path.basename __filename, '.coffee'
 machineName = require("os").hostname()
@@ -24,12 +19,24 @@ pubKeyPrefix = "gitlab.#{qName.replace /s$/,''}."
 context = rabbitJs.createContext AMQP_URL
 console.log "Worker [[#{workerID}]] starting, PUBing back into [[#{pubName}]]"
 
+# NOTE Schema ref in schemas DIR
 # ----------------------------------------
 #      g l u e
 # ----------------------------------------
 
-# NOTE Schema ref in schemas DIR
+# util
+request = (key,opts) ->
+  assert opts.url, "need url in opts!"
+  mixin =
+    json: yes # parse resp
+    headers:  (gitlab.headers key)
+    url: gitlab.urls.base + opts.url
 
+  delete opts.url
+  
+  rp _.assignIn mixin,opts
+
+# util
 serialize = (obj) ->
   new Buffer (JSON.stringify obj)
 
@@ -44,10 +51,10 @@ lookupProject = (body) ->
   
   console.log "Checking OWNED projects for [#{body.Workspace}] ..."
 
-  axios.get gitlab.urls.ownedProjects,
-    headers: (gitlab.headers body.Workspace)
-  .then (resp) ->
-    ps = resp.data
+  request body.Workspace,
+    url: gitlab.urls.ownedProjects
+  .then (respBody) ->
+    ps = respBody
     console.log "Gitlab projects found: #{ps.length} x"
     project = _.find ps, (p)-> p.name==body.FQBI
     body.gitlab = { project: project }
@@ -79,25 +86,33 @@ postCommit = (body) ->
       a.encoding = 'base64'
     a
 
-  axios.post url,
-    headers: (gitlab.headers body.Workspace)
-    data:
-      # https://docs.gitlab.com/ce/api/commits.html#create-a-commit-with-multiple-files-and-actions 
-      branch_name: 'master'
-      commit_message: (JSON.stringify commitMsg)
-      actions: actions_
-  .then (resp) ->
-    console.log "POST resp-status #{resp.status}"
+  data =
+    branch_name: 'master'
+    commit_message: (JSON.stringify commitMsg)
+    actions: actions_
+
+  # debug;
+  # data_ = JSON.stringify data,null,' '
+  # fs.writeFileSync '.lastbody.json', data_, 'utf-8'
+
+  request body.Workspace,
+    url: url
+    method: 'post'
+    body: data
+      # https://docs.gitlab.com/ce/api/commits.html
+      #         #create-a-commit-with-multiple-files-and-actions 
+  .then (respBody) ->
+    console.log "r = ",respBody
     Promise.resolve body
   .catch (err) ->
-    console.error "rest2: outch! "
+    console.error "rest2: outch!"
     err.body = body
     Promise.reject err
   
 # all well
 # [this] must be worker socket (ctx)
 ack = (body) ->
-  console.log "SUCCESS [#{workerID}] now ACKing ",body.id
+  console.log "SUCCESS [#{workerID}] now ACKing:",body.JobId
   @ack()
   body
   
@@ -127,7 +142,7 @@ publishError = (err,push) ->
     id : err.body.JobId
     domain: err.body.Workspace
     bookId: err.body.EpubId
-    files: _.map body.Actions,(a) -> { action:a.action, path:a.file_path }
+    files: _.map err.body.Actions,(a) -> { action:a.action, path:a.file_path }
     FQBI: err.body.FQBI
     workerID: workerID
     status: "ERROR"
@@ -139,7 +154,7 @@ publishError = (err,push) ->
 # not all well
 # [this] must be worker socket (ctx)
 ackAfterErr = (err) ->
-  console.error "!FAILED [#{workerID}] now ACKing ", err.body.id
+  console.error "!FAILED [#{workerID}] now ACKing:", err.body.JobId
   @ack()
 
 

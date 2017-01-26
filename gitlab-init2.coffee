@@ -9,7 +9,7 @@ parse = (data,suffix) ->
       console.log "  \\_ JSON.parsing #{suffix} .."
       _.assignIn tokens,(JSON.parse data)
     else
-      console.log "  \\_ QS.parse #{suffix} .."
+      console.log "  \\_ QS.parsing #{suffix} .."
       _.assignIn tokens,(qs.parse data.trim())
   catch err
     console.error "PARSE-ERR:\n",err
@@ -33,8 +33,8 @@ GITLAB_URL = process.env.GITLAB_URL or 'http://localhost:10080/api/v3'
 console.log "Gitlab baseURL: #{GITLAB_URL}"
 
 module.exports =
-  headers: (wrkSpc) ->
-    "PRIVATE-TOKEN" : tokens[wrkSpc]
+  headers: (key) ->
+    "PRIVATE-TOKEN" : tokens[key]
     "Content-Type" : "application/json"
   urls:
     base: GITLAB_URL
