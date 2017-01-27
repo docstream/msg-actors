@@ -102,7 +102,7 @@ postCommit = (body) ->
       # https://docs.gitlab.com/ce/api/commits.html
       #         #create-a-commit-with-multiple-files-and-actions 
   .then (respBody) ->
-    console.log "r = ",respBody
+    console.log "GITLAB Stats => ",respBody.stats
     Promise.resolve body
   .catch (err) ->
     console.error "rest2: outch!"
@@ -112,8 +112,8 @@ postCommit = (body) ->
 # all well
 # [this] must be worker socket (ctx)
 ack = (body) ->
-  console.log "SUCCESS [#{workerID}] now ACKing:",body.JobId
   @ack()
+  console.log "SUCCESS [#{workerID}] ACK'd:",body.JobId
   body
   
 
@@ -132,12 +132,13 @@ publishSuccess = (body) ->
     workerID : workerID
     status: "SUCCESS"
 
-  @publish "#{pubKeyPrefix}success" , serialize msg
+  OK_R_KEY = "#{pubKeyPrefix}success"
+  @publish OK_R_KEY, serialize msg
+  console.log "SUCCESS pub'd to [#{pubName} + #{OK_R_KEY}] ;", msg.id
   body
 
 # [this] MUST be a connected PUB socket !
 publishError = (err,push) ->
-  console.log "error msg to QUEUE:", err.message
   msg =
     id : err.body.JobId
     domain: err.body.Workspace
@@ -148,14 +149,16 @@ publishError = (err,push) ->
     status: "ERROR"
     errMsg: err.message
 
-  @publish "#{pubKeyPrefix}error" , serialize msg
+  ERR_R_KEY = "#{pubKeyPrefix}error"
+  @publish ERR_R_KEY, serialize msg
+  console.log "ERR pub'd to [#{pubName} + #{ERR_R_KEY}] ;", err.message
   push err
 
 # not all well
 # [this] must be worker socket (ctx)
 ackAfterErr = (err) ->
-  console.error "!FAILED [#{workerID}] now ACKing:", err.body.JobId
   @ack()
+  console.error "!FAILED [#{workerID}] ACK'd:", err.body.JobId
 
 
 #---------------------------------------
