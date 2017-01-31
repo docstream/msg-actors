@@ -31,6 +31,9 @@ request = (key,opts) ->
     json: yes # parse resp
     headers:  (gitlab.headers key)
     url: gitlab.urls.base + opts.url
+    # FIXME loop and/or filter
+    qs:
+      per_page:100
 
   delete opts.url
   
@@ -44,6 +47,7 @@ serialize = (obj) ->
 unwrapFQBI = (body) ->
   body.EpubId = body.EpubId.replace /^\// , ''
   body.FQBI = body.Workspace + "__epub." + body.EpubId
+  console.log "appending FQBI: #{body.FQBI} to msg-body"
   body
 
 # PROMISE !
@@ -57,7 +61,9 @@ lookupProject = (body) ->
     ps = respBody
     console.log "Gitlab projects found: #{ps.length} x"
     project = _.find ps, (p)-> p.name==body.FQBI
+    assert project, "Project not FOUND !"
     body.gitlab = { project: project }
+    console.log "Project ID to commit into is no.#{body.gitlab.project.id}"
     Promise.resolve body
   .catch (err) ->
     console.error "rest1: outch!"
@@ -194,11 +200,11 @@ context.on 'ready', ->
   #       console.info " {SUB msg} #{pubName} (debug) ::: ",message
 
   pub.connect pubName, ->
-    console.log "〉PUB [#{pubName}] ready..."
+    console.log " > PUB [#{pubName}] ready..."
 
     wrk.connect qName, ->
       wrk.setEncoding 'utf8'
-      console.log "〉WORKER [#{qName}] listening..."
+      console.log " > WORKER [#{qName}] listening..."
           
       # --------------- main chain -----------------
       H wrk
