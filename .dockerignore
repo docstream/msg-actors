@@ -1,0 +1,8 @@
+.coverage
+.git
+Makefile
+TAGS
+*swp
+*options
+node_modules
+node_modules/
