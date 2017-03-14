@@ -50,6 +50,14 @@ unwrapFQBI = (body) ->
   console.log "appending FQBI: #{body.FQBI} to msg-body"
   body
 
+# gives us better logs
+tokenChk = (body) ->
+  if gitlab.token body.Workspace
+    body
+  else
+    throw new Error "!!! NO TOKEN ; This Worker cannot handle wrkspc [#{body.Workspace}]"
+
+
 # PROMISE !
 lookupProject = (body) ->
   
@@ -211,6 +219,7 @@ context.on 'ready', ->
         .doto  -> console.log "new MSG.."
         .map JSON.parse
         .doto (bodyParsed) -> console.log "Keys: ", (_.keys bodyParsed).join '/'
+        .map tokenChk # may throw
         .map unwrapFQBI
         .map lookupProject
         .flatMap H # cast Promise-back-to-stream
