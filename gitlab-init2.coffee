@@ -33,6 +33,7 @@ GITLAB_URL = process.env.GITLAB_URL or 'http://localhost:10080/api/v3'
 console.log "Gitlab baseURL: #{GITLAB_URL}"
 
 module.exports =
+  token: (key) -> tokens[key]
   headers: (key) ->
     "PRIVATE-TOKEN" : tokens[key]
     "Content-Type" : "application/json"
