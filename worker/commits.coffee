@@ -50,8 +50,8 @@ unwrapFQBI = (body) ->
   console.log "appending FQBI: #{body.FQBI} to msg-body"
   body
 
-# gives us better logs, not active!
-tokenChk = (body) ->
+# gives us better logs
+isTokenPresent = (body) ->
   if gitlab.token body.Workspace
     body
   else
@@ -219,7 +219,7 @@ context.on 'ready', ->
         .doto  -> console.log "new MSG.."
         .map JSON.parse
         .doto (bodyParsed) -> console.log "Keys: ", (_.keys bodyParsed).join '/'
-        # map tokenChk # ?
+        .map isTokenPresent
         .map unwrapFQBI
         .map lookupProject
         .flatMap H # cast Promise-back-to-stream
