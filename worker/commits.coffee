@@ -45,18 +45,31 @@ serialize = (obj) ->
 
 # Fully Qualified Book Id
 unwrapFQBI = (body) ->
-  body.EpubId = body.EpubId.replace /^\// , ''
-  body.FQBI = body.Workspace + "__epub." + body.EpubId
-  console.log "appending FQBI: #{body.FQBI} to msg-body"
-  body
-
-# gives us better logs
-isTokenPresent = (body) ->
-  if gitlab.token body.Workspace
+  try
+    body.EpubId = body.EpubId.replace /^\// , ''
+    body.FQBI = body.Workspace + "__epub." + body.EpubId
+    console.log "appending FQBI: #{body.FQBI} to msg-body"
     body
-  else
-    throw new Error "!!! NO TOKEN ; This Worker cannot handle wrkspc [#{body.Workspace}]"
+  catch err
+    errMsg2 = "unwrapFQBI issues; EpubId: #{body.EpubId} / #{err.message}"
+    e2 = new Error errMsg2
+    e2.body = body
+    throw e2
 
+JSONParse = (msg) ->
+  try
+    JSON.parse msg
+  catch err
+    console.error "JSON.parse fails; msg= ", msg.toString()
+    throw err
+
+validateConfig = (body) ->
+  unless (gitlab.token body.Workspace)
+    err =  new Error "TOKEN NOT CONFIGURED for this Workspace !!"
+    err.body = body
+    throw err
+  else
+    b
 
 # PROMISE !
 lookupProject = (body) ->
@@ -217,10 +230,17 @@ context.on 'ready', ->
       # --------------- main chain -----------------
       H wrk
         .doto  -> console.log "new MSG.."
-        .map JSON.parse
-        .doto (bodyParsed) -> console.log "Keys: ", (_.keys bodyParsed).join '/'
-        .map isTokenPresent
+        .map JSONParse
+        .errors (err) ->
+          console.error "ACKing trashy JSON. "
+          # TODO;  publish warning to [#{pubName}] 
+          wrk.ack()
+          # stop
+        .doto (b) -> 
+          console.log "Keys: ", (_.keys b).join '/'
+          console.log "WRKSPC: #{b.Workspace} / User: #{b.UserName} / EpubId: #{b.EpubId}"
         .map unwrapFQBI
+        .map validateConfig
         .map lookupProject
         .flatMap H # cast Promise-back-to-stream
         .map postCommit
