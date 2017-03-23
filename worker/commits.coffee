@@ -64,12 +64,15 @@ JSONParse = (msg) ->
     throw err
 
 validateConfig = (body) ->
+  console.log "Can we handle this #{body.Workspace} ?"
   unless (gitlab.token body.Workspace)
     err =  new Error "TOKEN NOT CONFIGURED for this Workspace !!"
     err.body = body
+    console.log " \\ NO"
     throw err
   else
-    b
+    console.log " \\ YES"
+    body
 
 # PROMISE !
 lookupProject = (body) ->
