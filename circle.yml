@@ -3,7 +3,7 @@ machine:
     - docker
   environment:
     AWS_ECR : 945120944185.dkr.ecr.eu-central-1.amazonaws.com
-    APP : gitlab-workers
+    APP : msg-actors
 
 dependencies:
   override:
@@ -12,6 +12,6 @@ dependencies:
 
 deployment:
   prod:
-    branch: [master,dev]
+    branch: [master,dev,unstable]
     commands:
       - aws/deploy.sh

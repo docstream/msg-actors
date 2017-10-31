@@ -1,5 +1,5 @@
 AMQP_URL = process.env.AMQP_URL or 'amqp://127.0.0.1:5672'
-fs = require 'fs'
+#fs = require 'fs'
 assert = require 'assert'
 path = require 'path'
 gitlab = (require '../gitlab-init2')
@@ -213,7 +213,7 @@ context.on 'ready', ->
 
   wrk = context.socket 'WORKER'
   pub = context.socket 'PUB',noCreate:yes
-  sub = context.socket 'SUB',noCreate:yes
+  #sub = context.socket 'SUB',noCreate:yes
 
   # debug socket
   # sub.connect pubName,'#', ->
