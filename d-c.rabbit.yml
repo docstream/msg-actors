@@ -10,5 +10,4 @@ services:
     image: rabbitmq:3-management
     ports:
       - 18882:15672 # http
-      - 5673:5672  # amqp-socket
-
+      - 5672:5672  # amqp-socket

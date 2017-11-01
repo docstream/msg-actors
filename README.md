@@ -1,20 +1,39 @@
 # gitlab-workerS
 
-nodejs queue worker, updating gitlab w content
+nodejs queue workers/actors
+
+always set AMQP_URL env (default = amqp://127.0.0.1:5672)
+
+ - commits.coffee; updating gitlab w content from ED
+ 	
+    # need G_TOKEN_* env(s) + GITLAB_URL (endpoint)
+
+    $ G_TOKEN_1=demo.readin.no=myPersonalToken&yyy.example.com=anotherTOKEN
+
+    # or
+
+    $ G_TOKEN_2={\"jjf.readin.no\":\"anotherToken\", ... }
+
+
+ - emails.coffee; passing-on email jobs to mailgun
+
+    # need MAILGUN_TOKEN_* env(s)
 
 ## PREPHASE
 
 Se pack-ed
 
-## start gitlab OG en spesifik worker
+## start rabbitmq OG en spesifik worker
 
-    docker-compose -f d-c.gitlab.yml up # en gang
-    # start en RABBITMQ på port 5672 (ed sin docker-compose feks)
-    . _GITLAB.env # Denne setter env GITLAB_TOKEN
-    # andre envs er 
-    #  GITLAB_URL=http://localhost:10080/api/v3
-    #  AMQP_URL=amqp://127.0.0.1:5672 
-    coffee worker/updates.coffee
+    # start en RABBITMQ på port 5672 
+
+    $ docker-compose -f d-c.rabbit.yml up
+    
+    $ export AMQP_URL=amqp://127.0.0.1:5672
+
+    $ coffee worker/stuff.coffee
+
+    $ docker run -ti msg-actors worker/stuff.coffee
 
 ## TODO
 

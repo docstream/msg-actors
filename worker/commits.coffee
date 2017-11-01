@@ -2,7 +2,7 @@ AMQP_URL = process.env.AMQP_URL or 'amqp://127.0.0.1:5672'
 #fs = require 'fs'
 assert = require 'assert'
 path = require 'path'
-gitlab = (require '../gitlab-init2')
+gitlab = (require '../utils/gitlab-init')
 rp = require 'request-promise'
 rabbitJs = require 'rabbit.js'
 _ = require 'lodash'
@@ -56,12 +56,7 @@ unwrapFQBI = (body) ->
     e2.body = body
     throw e2
 
-JSONParse = (msg) ->
-  try
-    JSON.parse msg
-  catch err
-    console.error "JSON.parse fails; msg= ", msg.toString()
-    throw err
+
 
 validateConfig = (body) ->
   console.log "Can we handle this #{body.Workspace} ?"

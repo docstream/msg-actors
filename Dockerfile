@@ -23,5 +23,6 @@ RUN npm i --silent
 ADD . /app/
 # FIXME RUN npm run test
 
-CMD ./node_modules/.bin/coffee worker/commits.coffee
-#CMD ./node_modules/.bin/coffee worker/updates.coffee
+ENTRYPOINT [ "./node_modules/.bin/coffee" ] 
+   # worker/commits.coffee
+   # worker/*

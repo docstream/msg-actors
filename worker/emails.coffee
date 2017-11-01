@@ -4,6 +4,8 @@ _ = require 'lodash'
 H = require 'highland'
 rp = require 'request-promise' # mailgun
 rabbitJs = require 'rabbit.js'
+path = require 'path'
+
 
 qName = path.basename __filename, '.coffee'
 machineName = (require "os").hostname()
@@ -13,6 +15,8 @@ workerID = "#{qName}:#{machineName}:#{process.pid}"
 context = rabbitJs.createContext AMQP_URL
 
 pubName = "amq.topic"
+pubKeyPrefix = "#{qName}."
+
 console.log "Worker [[#{workerID}]] starting, PUBing back into [[#{pubName}]]"
 
 
@@ -23,11 +27,8 @@ publishSuccess = (body) ->
   # the schema for SUBscribers
 
   msg =
-    id : body.JobId ?
-    domain: body.Workspace ?
-    bookId: body.EpubId
-    files: _.map body.Actions,(a) -> { action:a.action, path:a.file_path }
-    FQBI: body.FQBI
+    id : body.JobId # ?
+    domain: body.Workspace # ?
     workerID : workerID
     status: "SUCCESS"
 
@@ -53,7 +54,7 @@ context.on 'ready', ->
       # --------------- main chain -----------------
       H wrk
         .doto  -> console.log "new MSG.."
-        .map JSONParse
+        .map JSON.parse
         .errors (err) ->
           console.error "ACKing trashy JSON. "
           # TODO;  publish warning to [#{pubName}] 
