@@ -9,9 +9,11 @@ SMTP_PWD = process.env.SMTP_PWD
 console.log "SMTP_HOST: #{SMTP_HOST}"
 
 unless SMTP_USER and SMTP_PWD
-  console.error " Set SMTP_USER/SMTP_PWD !"
+  console.error " Set SMTP_USER and SMTP_PWD !"
   process.exit 1
 
+console.log "SMTP_HOST: #{SMTP_HOST}"
+console.log "SMTP_USER: #{SMTP_USER}\n"
 
 # new Nodemailer instance
 module.exports = sender = ->

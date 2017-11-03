@@ -28,8 +28,8 @@ publishSuccess = (body) ->
   # the schema for SUBscribers
 
   msg =
-    id : body.JobId # ?
-    domain: body.Workspace # ?
+    id : body.id # ?
+    domain: body.wrkspc # ?
     workerID : workerID
     status: "SUCCESS"
 
@@ -63,6 +63,6 @@ context.on 'ready', ->
           # stop
         .doto (b) -> 
           console.log "Keys: ", (_.keys b).join '/'
-          console.log " \\_ User: #{b.to} / subject: #{b.subject}"
+          console.log " \\_ User: #{b.to} / subject: #{b.subject} / WRKSPC: #{b.wrkspc}"
         .each (publishSuccess.bind pub)
        
