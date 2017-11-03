@@ -17,7 +17,8 @@ always set AMQP_URL env (default = amqp://127.0.0.1:5672)
 
  - emails.coffee; passing-on email jobs to mailgun
 
-    # need MAILGUN_TOKEN_* env(s)
+    # need SMTP_USER + SMTP_PWD + SMTP_HOST env(s)
+
 
 ## PREPHASE
 

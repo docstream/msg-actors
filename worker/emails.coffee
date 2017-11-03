@@ -5,6 +5,7 @@ H = require 'highland'
 rp = require 'request-promise' # mailgun
 rabbitJs = require 'rabbit.js'
 path = require 'path'
+smtpMailer = require '../utils/smtp-init'
 
 
 qName = path.basename __filename, '.coffee'
