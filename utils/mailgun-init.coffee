@@ -7,9 +7,10 @@ unless MAILGUN_KEY
 
 auth = "api:#{MAILGUN_KEY}"
 
-MAILGUN_URL = process.env.MAILGUN_URL or "https://#{auth}@api.mailgun.net/v3/readin.no/messages"
+defaultURL = "https://#{auth}@api.mailgun.net/v3/readin.no/messages"
+
+MAILGUN_URL = process.env.MAILGUN_URL or defaultURL
 
 console.log "MAILGUN_URL: #{MAILGUN_URL}\n"
 
-# new Mail instance
 module.exports = MAILGUN_URL
