@@ -6,7 +6,6 @@ SMTP_HOST = process.env.SMTP_HOST or 'smtp.mailgun.org'
 SMTP_USER = process.env.SMTP_USER 
 SMTP_PWD = process.env.SMTP_PWD
 
-console.log "SMTP_HOST: #{SMTP_HOST}"
 
 unless SMTP_USER and SMTP_PWD
   console.error " Set SMTP_USER and SMTP_PWD !"

@@ -6,6 +6,7 @@ rp = require 'request-promise' # mailgun
 rabbitJs = require 'rabbit.js'
 path = require 'path'
 smtpMailer = require '../utils/smtp-init'
+assert = require 'assert'
 
 
 qName = path.basename __filename, '.coffee'
@@ -20,6 +21,25 @@ pubKeyPrefix = "#{qName}."
 
 console.log "Worker [[#{workerID}]] starting, PUBing back into [[#{pubName}]]"
 
+# util
+serialize = (obj) ->
+  new Buffer (JSON.stringify obj)
+
+validate = (body) ->
+  assert body.id
+  assert body.wrkspc
+  assert body.from
+  assert body.to
+  assert body.subject
+  assert body.html
+  body
+
+# main FUNC
+smtp = H.wrapCallback smtpMailer.sendMail
+
+
+
+
 
 # [this] MUST be a connected PUB socket !
 publishSuccess = (body) ->
@@ -29,7 +49,7 @@ publishSuccess = (body) ->
 
   msg =
     id : body.id # ?
-    domain: body.wrkspc # ?
+    wrkspc: body.wrkspc # ?
     workerID : workerID
     status: "SUCCESS"
 
@@ -61,8 +81,23 @@ context.on 'ready', ->
           # TODO;  publish warning to [#{pubName}] 
           wrk.ack()
           # stop
+        .map validate
         .doto (b) -> 
           console.log "Keys: ", (_.keys b).join '/'
-          console.log " \\_ User: #{b.to} / subject: #{b.subject} / WRKSPC: #{b.wrkspc}"
+          console.log " \\_ .id >> #{b.id} "
+          console.log " \\_ .to: #{b.to} / .subject: #{b.subject} / .wrkspc: #{b.wrkspc}"
+        .map smtp
+        .doto (b) ->
+          wrk.ack()
+          console.log "SUCCESS [#{workerID}] ACK'd:", b.id
+        .errors (err, push) ->
+          ERR_R_KEY = "#{pubKeyPrefix}error"
+          msg =
+            body : err.body
+            msg : err.message
+          pub.publish ERR_R_KEY, serialize msg
+          push err
+          wrk.ack()
+          console.log "ERR pub'd to [#{pubName} + #{ERR_R_KEY}] ;", err.message
         .each (publishSuccess.bind pub)
        

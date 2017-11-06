@@ -2,12 +2,10 @@
   "from" : "<noreply@readin.no>",
   "to"   : "<enduser@example.com>",
   "bcc"  : "<administration@readin.no>",
-  "subject" : "Ordrebekreftelse",
-  
+  "subject" : "Ordrebekreftelse", 
   "id" : "From r-reader || .to|.subject|new Date()",
   "wrkspc" : "demo.readin.no",
-
-  "html" : "base64__84657rytueg9875yoiu\ger9urgehgiufsdhgsdf",
+  "html" : "base64__84657rytueg9875yoiuger9urgehgiufsdhgsdf",
   "_links" : {
     "schema" : {
       "href" : "r-reader/src/subscriptions/index.coffee#saveNewOrder()"
