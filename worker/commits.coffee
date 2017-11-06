@@ -56,8 +56,6 @@ unwrapFQBI = (body) ->
     e2.body = body
     throw e2
 
-
-
 validateConfig = (body) ->
   console.log "Can we handle this #{body.Workspace} ?"
   unless (gitlab.token body.Workspace)

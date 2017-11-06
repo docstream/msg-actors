@@ -5,7 +5,8 @@ H = require 'highland'
 rp = require 'request-promise' # mailgun
 rabbitJs = require 'rabbit.js'
 path = require 'path'
-smtpMailer = require '../utils/smtp-init'
+mailgunURL = require '../utils/mailgun-init'
+rp = require 'request-promise'
 assert = require 'assert'
 
 
@@ -26,20 +27,52 @@ serialize = (obj) ->
   new Buffer (JSON.stringify obj)
 
 validate = (body) ->
-  assert body.id
-  assert body.wrkspc
-  assert body.from
-  assert body.to
-  assert body.subject
-  assert body.html
+
+  assert body.id, 'id undef'
+  assert body.wrkspc, 'wrkspc undef'
+  # --------------------------------------
+  assert body.from, 'from undef'
+  assert body.to, 'to undef'
+  assert body.subject, 'subject undef'
+  assert body.html or body.txt , 'text/html undef'
+  console.log "Validated body ok"
   body
 
-# main FUNC
-smtp = H.wrapCallback smtpMailer.sendMail
+unwrapBase64 = (body) ->
+  body.text = sajdhds if body.text
+  body.html = sajdhds if body.html
+  body
+
+mailgunPost = (body) ->
+
+  rp 
+    json: yes # response JSONParsed
+    url: mailgunURL
+    method: 'post'
+    qs: body
+
+  .then (respBody) ->
+    console.log "RESP => "
+    console.log " \\_ id:",respBody.id
+    console.log " \\_ id:",respBody.message
+    body.mailgunQueue = respBody
+    Promise.resolve body
+  .catch (err) ->
+    console.error "rest: outch!"
+    err.body = body
+    Promise.reject err
 
 
-
-
+publishError = (err, push) ->
+  ERR_R_KEY = "#{pubKeyPrefix}error"
+  msg =
+    body : err.body or {}
+    msg : err.message
+  console.log "ERR pub'd to [#{pubName} + #{ERR_R_KEY}] ;", err.message
+  @publish ERR_R_KEY, serialize msg
+  #wrk.ack()
+  
+  push err
 
 # [this] MUST be a connected PUB socket !
 publishSuccess = (body) ->
@@ -80,24 +113,20 @@ context.on 'ready', ->
           console.error "ACKing trashy JSON. "
           # TODO;  publish warning to [#{pubName}] 
           wrk.ack()
-          # stop
+          # no push = ende
         .map validate
         .doto (b) -> 
-          console.log "Keys: ", (_.keys b).join '/'
-          console.log " \\_ .id >> #{b.id} "
-          console.log " \\_ .to: #{b.to} / .subject: #{b.subject} / .wrkspc: #{b.wrkspc}"
-        .map smtp
+          console.log "Keys: ", (_.keys b).join ', '
+          console.log " \\_ .id: #{b.id} "
+          console.log " \\_ #{b.to} / #{b.subject} / #{b.wrkspc}"
+        .map unwrapBase64
+        .map mailgunPost
+        .flatMap H
         .doto (b) ->
           wrk.ack()
           console.log "SUCCESS [#{workerID}] ACK'd:", b.id
-        .errors (err, push) ->
-          ERR_R_KEY = "#{pubKeyPrefix}error"
-          msg =
-            body : err.body
-            msg : err.message
-          pub.publish ERR_R_KEY, serialize msg
-          push err
-          wrk.ack()
-          console.log "ERR pub'd to [#{pubName} + #{ERR_R_KEY}] ;", err.message
+        .errors (publishError.bind pub)
+        .errors (err) ->
+          wrk.ack() 
+          # no push = ende
         .each (publishSuccess.bind pub)
-       

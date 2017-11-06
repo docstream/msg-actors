@@ -1,9 +1,9 @@
 {
-  "from" : "<noreply@readin.no>",
-  "to"   : "<enduser@example.com>",
-  "bcc"  : "<administration@readin.no>",
+  "from" : "noreply@readin.no",
+  "to"   : ["enduser@example.com"],
+  "bcc"  : ["administration@readin.no"],
   "subject" : "Ordrebekreftelse", 
-  "id" : "From r-reader || .to|.subject|new Date()",
+  "id" : "10001",
   "wrkspc" : "demo.readin.no",
   "html" : "base64__84657rytueg9875yoiuger9urgehgiufsdhgsdf",
   "_links" : {
