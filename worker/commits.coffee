@@ -162,6 +162,9 @@ publishSuccess = (body) ->
 
 # [this] MUST be a connected PUB socket !
 publishError = (err,push) ->
+
+  console.error err.stack
+
   msg =
     id : err.body.JobId
     domain: err.body.Workspace
@@ -171,6 +174,7 @@ publishError = (err,push) ->
     workerID: workerID
     status: "ERROR"
     errMsg: err.message
+    stack: err.stack.toString()
 
   ERR_R_KEY = "#{pubKeyPrefix}error"
   @publish ERR_R_KEY, serialize msg

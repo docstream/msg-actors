@@ -5,7 +5,8 @@
   "subject" : "Ordrebekreftelse", 
   "id" : "10001",
   "wrkspc" : "demo.readin.no",
-  "html" : "base64__84657rytueg9875yoiuger9urgehgiufsdhgsdf",
+  "html" : "VGVzdCBkZXR0ZSBlciA8cD4=",
+  "encoding" : "base64",
   "_links" : {
     "schema" : {
       "href" : "r-reader/src/subscriptions/index.coffee#saveNewOrder()"

@@ -28,19 +28,29 @@ serialize = (obj) ->
 
 validate = (body) ->
 
-  assert body.id, 'id undef'
-  assert body.wrkspc, 'wrkspc undef'
+  msg = (f) -> " ;;;; #{f} undef"
+
+  assert body.id, msg 'id'
+  assert body.wrkspc, msg 'wrkspc'
   # --------------------------------------
-  assert body.from, 'from undef'
-  assert body.to, 'to undef'
-  assert body.subject, 'subject undef'
-  assert body.html or body.txt , 'text/html undef'
+  assert body.from, msg 'from'
+  assert body.to, msg 'to'
+  assert body.subject, msg 'subject'
+  assert body.html or body.txt , msg 'text or html'
   console.log "Validated body ok"
   body
 
-unwrapBase64 = (body) ->
-  body.text = sajdhds if body.text
-  body.html = sajdhds if body.html
+decodeMessage = (body) ->
+
+  if body.encoding
+    decode = (x) ->
+      new Buffer(x, body.encoding).toString('utf-8')
+  else
+    decode = (x) -> x
+
+  body.text = (decode body.text) if body.text
+  body.html = (decode body.html) if body.html
+  console.log body
   body
 
 mailgunPost = (body) ->
@@ -52,9 +62,9 @@ mailgunPost = (body) ->
     qs: body
 
   .then (respBody) ->
-    console.log "RESP => "
+    console.log "POST-RESP => "
     console.log " \\_ id:",respBody.id
-    console.log " \\_ id:",respBody.message
+    console.log " \\_ message:",respBody.message
     body.mailgunQueue = respBody
     Promise.resolve body
   .catch (err) ->
@@ -65,9 +75,12 @@ mailgunPost = (body) ->
 
 publishError = (err, push) ->
   ERR_R_KEY = "#{pubKeyPrefix}error"
+
   msg =
     body : err.body or {}
     msg : err.message
+    stack : err.stack.toString()
+
   console.log "ERR pub'd to [#{pubName} + #{ERR_R_KEY}] ;", err.message
   @publish ERR_R_KEY, serialize msg
   #wrk.ack()
@@ -85,6 +98,7 @@ publishSuccess = (body) ->
     wrkspc: body.wrkspc # ?
     workerID : workerID
     status: "SUCCESS"
+    payload: body
 
   OK_R_KEY = "#{pubKeyPrefix}success"
   @publish OK_R_KEY, serialize msg
@@ -119,7 +133,7 @@ context.on 'ready', ->
           console.log "Keys: ", (_.keys b).join ', '
           console.log " \\_ .id: #{b.id} "
           console.log " \\_ #{b.to} / #{b.subject} / #{b.wrkspc}"
-        .map unwrapBase64
+        .map decodeMessage
         .map mailgunPost
         .flatMap H
         .doto (b) ->
@@ -127,6 +141,7 @@ context.on 'ready', ->
           console.log "SUCCESS [#{workerID}] ACK'd:", b.id
         .errors (publishError.bind pub)
         .errors (err) ->
+          console.error err.stack
           wrk.ack() 
           # no push = ende
         .each (publishSuccess.bind pub)
