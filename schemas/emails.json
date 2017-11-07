@@ -1,7 +1,7 @@
 {
   "from" : "noreply@readin.no",
   "to"   : ["enduser@example.com"],
-  "bcc"  : ["administration@readin.no"],
+  "bcc"  : ["ds-dev@readin.no"],
   "subject" : "Ordrebekreftelse", 
   "id" : "10001",
   "wrkspc" : "demo.readin.no",
