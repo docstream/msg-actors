@@ -126,6 +126,8 @@ postCommit = (body) ->
       #         #create-a-commit-with-multiple-files-and-actions 
   .then (respBody) ->
     console.log "GITLAB Stats => ",respBody.stats
+    # FIXME guard 
+    #        need to download MORE if next_page==true
     Promise.resolve body
   .catch (err) ->
     console.error "rest2: outch!"
