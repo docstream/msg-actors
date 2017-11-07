@@ -1,4 +1,5 @@
 qs = require 'querystring'
+_ = require 'lodash'
 
 
 module.exports = parse = (rawdata,tokens,suffix) ->
