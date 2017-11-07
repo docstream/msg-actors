@@ -1,7 +1,7 @@
 {
-  "name": "gitlab-worker",
+  "name": "msg-actors",
   "version": "1.0.0",
-  "description": "pulls jobs from kue and uses gitlab res API",
+  "description": "pulls jobs from Q and executes stuff",
   "scripts": {},
   "keywords": [
     "vcs",
