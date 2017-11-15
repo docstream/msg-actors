@@ -27,6 +27,7 @@ console.log "Worker [[#{workerID}]] starting, PUBing back into [[#{pubName}]]"
 # util
 request = (key,opts) ->
   assert opts.url, "need url in opts!"
+
   mixin =
     json: yes # parse resp
     headers:  (gitlab.headers key)
@@ -36,6 +37,8 @@ request = (key,opts) ->
       per_page:100 # max instead of low-default?
 
   delete opts.url
+
+  console.log "calling URL => '#{mixin.url}'"
   
   rp _.assignIn mixin,opts
 
@@ -70,13 +73,13 @@ validateConfig = (body) ->
 # PROMISE !
 lookupProject = (body) ->
   
-  console.log "Checking OWNED projects for [#{body.Workspace}] ..."
+  console.log "Lookup project-id [#{body.Workspace}] ..."
 
   request body.Workspace,
     url: "#{gitlab.urls.ownedProjects}?search=#{body.FQBI}"
   .then (respBody) ->
     ps = respBody
-    console.log "Gitlab projects found: #{ps.length} x"
+    console.log "Gitlab project(s) found: #{ps.length} x"
     project = _.find ps, (p)-> p.name==body.FQBI
     assert project, "Project not FOUND !"
     body.gitlab = { project: project }
