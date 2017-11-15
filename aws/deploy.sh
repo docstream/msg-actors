@@ -1,6 +1,6 @@
 #!/usr/bin/env sh
 
-$APP=${APP:-gitlab-workers}
+$APP=${APP:-msg-actors}
 
 [ -z "$AWS_ECR" ] && echo "env AWS_ECR missing! ABORT" && exit 1
 [ -z "$CIRCLE_BRANCH" ] && echo "env CIRCLE_BRANCH missing! ABORT" && exit 1
