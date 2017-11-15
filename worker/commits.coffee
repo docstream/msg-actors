@@ -232,7 +232,7 @@ context.on 'ready', ->
       # --------------- main chain -----------------
       H wrk
         .doto  -> console.log "new MSG.."
-        .map JSONParse
+        .map JSON.parse
         .errors (err) ->
           console.error "ACKing trashy JSON. "
           # TODO;  publish warning to [#{pubName}] 
