@@ -38,7 +38,7 @@ request = (key,opts) ->
 
   delete opts.url
 
-  console.log "calling URL => '#{mixin.url}'"
+  console.log "calling URL => #{opts.method} '#{mixin.url}'"
   
   rp _.assignIn mixin,opts
 
@@ -105,8 +105,6 @@ postCommit = (body) ->
 
   url = (gitlab.urls.commits body.gitlab.project.id)
   
-  console.log "POSTing to [#{url}] ..."
-
   actions_ = _.map body.Actions,(a) ->
     if a.content
       a.encoding = 'base64'
@@ -116,6 +114,8 @@ postCommit = (body) ->
     branch_name: 'master'
     commit_message: (JSON.stringify commitMsg)
     actions: actions_
+
+  console.log "COMMITING ...", data
 
   # debug;
   # data_ = JSON.stringify data,null,' '
