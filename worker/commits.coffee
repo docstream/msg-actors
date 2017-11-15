@@ -33,7 +33,7 @@ request = (key,opts) ->
     url: gitlab.urls.base + opts.url
     # FIXME loop and/or filter
     qs:
-      per_page:100
+      per_page:100 # max instead of low-default?
 
   delete opts.url
   
@@ -73,7 +73,7 @@ lookupProject = (body) ->
   console.log "Checking OWNED projects for [#{body.Workspace}] ..."
 
   request body.Workspace,
-    url: gitlab.urls.ownedProjects
+    url: "#{gitlab.urls.ownedProjects}?search=#{body.FQBI}"
   .then (respBody) ->
     ps = respBody
     console.log "Gitlab projects found: #{ps.length} x"
