@@ -1,7 +1,7 @@
 parse = require './parse'
 _ = require 'lodash'
 
-GITLAB_URL = process.env.GITLAB_URL or 'http://localhost:10080/api/v3'
+GITLAB_URL = process.env.GITLAB_URL or 'http://localhost:10080/api/v4'
 console.log "Gitlab endpoint: #{GITLAB_URL}"
 
 tokens = {}
@@ -31,5 +31,5 @@ module.exports =
     base: GITLAB_URL
     commits : (pNo) ->
       "/projects/#{pNo}/repository/commits"
-    ownedProjects : "/projects/owned"
+    projects : "/projects"
 

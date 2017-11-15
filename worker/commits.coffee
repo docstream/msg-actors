@@ -76,7 +76,7 @@ lookupProject = (body) ->
   console.log "Lookup project-id [#{body.Workspace}] ..."
 
   request body.Workspace,
-    url: "#{gitlab.urls.ownedProjects}?search=#{body.FQBI}"
+    url: "#{gitlab.urls.projects}?search=#{body.FQBI}"
   .then (respBody) ->
     ps = respBody
     console.log "Gitlab project(s) found: #{ps.length} x"
