@@ -18,8 +18,8 @@ if (_.keys tokens).length == 0
   console.error "NO GITLAB TOKENS FOUND! Aborting"
   process.exit 1
       
-console.log "GITLAB tokens:"
-console.dir tokens
+# console.log "GITLAB tokens:"
+# console.dir tokens
 
 
 module.exports =
