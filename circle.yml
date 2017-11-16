@@ -10,6 +10,16 @@ dependencies:
     - docker info
     - docker build --rm=false -t $AWS_ECR/$APP:$CIRCLE_BRANCH .
 
+test:
+  override:
+    - docker run -d --name queue rabbitmq:3
+    - docker run --rm -ti
+      --link queue:queue
+      --entrypoint '/bin/bash'
+      $AWS_ECR/$APP:$CIRCLE_BRANCH 
+      exercise.sh
+      
+
 deployment:
   prod:
     branch: [master,dev,unstable]

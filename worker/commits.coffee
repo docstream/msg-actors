@@ -115,8 +115,6 @@ postCommit = (body) ->
     commit_message: (JSON.stringify commitMsg)
     actions: actions_
 
-  console.log "COMMITING ...", data.branch, data.commit_message
-
   # debug;
   # data_ = JSON.stringify data,null,' '
   # fs.writeFileSync '.lastbody.json', data_, 'utf-8'

@@ -9,7 +9,7 @@ ENV AMQP_URL amqp://queue
 # TODO maybe connect to /session and grab TOKEN
 #ENV GITLAB_USER some-user
 #ENV GITLAB_PWD passordfortheyear
-ENV GITLAB_URL http://gitlab/api/v3
+ENV GITLAB_URL https://gitlab/api/v4
 
 # NB! Use LTS version ALWAYS
 RUN npm --global i npm@2.15.5 --silent
