@@ -111,11 +111,11 @@ postCommit = (body) ->
     a
 
   data =
-    branch_name: 'master'
+    branch: 'master'
     commit_message: (JSON.stringify commitMsg)
     actions: actions_
 
-  console.log "COMMITING ...", data
+  console.log "COMMITING ...", _data.branch, data.commit_message
 
   # debug;
   # data_ = JSON.stringify data,null,' '
