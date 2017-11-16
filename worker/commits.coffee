@@ -115,7 +115,7 @@ postCommit = (body) ->
     commit_message: (JSON.stringify commitMsg)
     actions: actions_
 
-  console.log "COMMITING ...", _data.branch, data.commit_message
+  console.log "COMMITING ...", data.branch, data.commit_message
 
   # debug;
   # data_ = JSON.stringify data,null,' '
