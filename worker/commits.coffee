@@ -29,6 +29,7 @@ request = (key,opts) ->
   assert opts.url, "need url in opts!"
 
   mixin =
+    timeout: 20000
     json: yes # parse resp
     headers:  (gitlab.headers key)
     url: gitlab.urls.base + opts.url
@@ -77,6 +78,7 @@ lookupProject = (body) ->
 
   request body.Workspace,
     url: "#{gitlab.urls.projects}?search=#{body.FQBI}"
+    method: 'get'
   .then (respBody) ->
     ps = respBody
     console.log "Gitlab project(s) found: #{ps.length} x"
