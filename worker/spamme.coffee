@@ -34,28 +34,14 @@ validate = (body) ->
   assert body.wrkspc, msg 'wrkspc'
   # --------------------------------------
   assert body.from, msg 'from'
-  assert body.to, msg 'to'
-  assert body.subject, msg 'subject'
-  assert body.html or body.txt , msg 'text or html'
+  assert body.chunkId, msg 'chunkId'
   console.log "Validated body ok"
   body
 
-decodeMessage = (body) ->
 
-  if body.encoding
-    decode = (x) ->
-      new Buffer(x, body.encoding).toString('utf-8')
-  else
-    decode = (x) -> x
+mailchimpPost = (body) ->
 
-  body.text = (decode body.text) if body.text
-  body.html = (decode body.html) if body.html
-  console.log body
-  body
-
-mailgunPost = (body) ->
-
-  rp 
+  rp
     json: yes # response JSONParsed
     url: mailgunURL
     method: 'post'
@@ -84,7 +70,7 @@ publishError = (err, push) ->
   console.log "ERR pub'd to [#{pubName} + #{ERR_R_KEY}] ;", err.message
   @publish ERR_R_KEY, serialize msg
   #wrk.ack()
-  
+
   push err
 
 # [this] MUST be a connected PUB socket !
@@ -114,27 +100,26 @@ context.on 'ready', ->
 
   pub.connect pubName, ->
     console.log " > PUB [#{pubName}] ready..."
-    
+
     wrk.connect qName, ->
       wrk.setEncoding 'utf8'
       console.log " > WORKER [#{qName}] listening..."
-          
+
       # --------------- main chain -----------------
       H wrk
         .doto  -> console.log "new MSG.."
         .map JSON.parse
         .errors (err) ->
           console.error "ACKing trashy JSON. "
-          # TODO;  publish warning to [#{pubName}] 
+          # TODO;  publish warning to [#{pubName}]
           wrk.ack()
           # no push = ende
         .map validate
-        .doto (b) -> 
+        .doto (b) ->
           console.log "Keys: ", (_.keys b).join ', '
           console.log " \\_ .id: #{b.id} "
           console.log " \\_ #{b.to} / #{b.subject} / #{b.wrkspc}"
-        .map decodeMessage
-        .map mailgunPost
+        .map mailchimpPost
         .flatMap H
         .doto (b) ->
           wrk.ack()
@@ -142,6 +127,6 @@ context.on 'ready', ->
         .errors (publishError.bind pub)
         .errors (err) ->
           console.error err.stack
-          wrk.ack() 
+          wrk.ack()
           # no push = ende
         .each (publishSuccess.bind pub)

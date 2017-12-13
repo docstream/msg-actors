@@ -36,7 +36,7 @@ validate = (body) ->
   # --------------------------------------
   assert body.from, msg 'from'
   assert body.metadata["metadata-meta-feedback-receiver_ss"] , msg 'metadata-meta-feedback-receiver_ss'
-  assert body.ebookId , msg 'ebookId'
+  assert body.chunkId , msg 'chunkId'
   assert body.html or body.text , msg 'text or html'
   console.log "Validated body ok"
   body
@@ -75,7 +75,7 @@ transform = (body) ->
     "wrkspc" : body.wrkspc,
     "from" : body.from,
     "to" : (body.metadata["metadata-meta-feedback-receiver_ss"]).toString(),
-    "subject" : "Melding fra #{body.from} på dokument #{body.ebookId}",
+    "subject" : "Melding fra #{body.from} på dokument #{body.chunkId}",
     "text" : body.text + "\nVennligst svar ved å trykke her: #{body.from}"
   }
 
