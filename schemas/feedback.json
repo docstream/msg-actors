@@ -1,0 +1,30 @@
+{
+  "id": "851b206a-0ad8-4975-9215-469bb3ea4abf",
+  "wrkspc": "hafslund.readin.no",
+  "from": "rino@falstad.net",
+  "metadata":
+  { "prodKey_s": "epub,__test-vedlegg:master",
+    "prodNS_s": "epub",
+    "prodId_s": "__test-vedlegg:master",
+    "epubId_s": "__test-vedlegg",
+    "gitref_s": "master",
+    "doc-type_s": "volume",
+    "generic-doc-type_s": "volume",
+    "metadata-subjects_ss": [ "test", "jepp2" ],
+    "metadata-meta-arbeidsfase_ss":
+    [ "Bygging",
+      "Drift og vedlikehold",
+      "Etterarbeid/dokumentasjon"
+    ],
+    "metadata-meta-dokumenttype_ss": [ "Retningslinjer og spesifikasjoner" ],
+    "metadata-meta-innholdstype_ss": [ "Avvik fra REN" ],
+    "metadata-meta-publiseres-eksternt_ss": [ "Nei" ],
+    "metadata-meta-tilknyttet-ren-blad_ss": [ "4000" ],
+    "metadata-meta-faggruppe_ss": [ "Linjemateriell" ],
+    "metadata-meta-feedback-receiver_ss": [ "rf@docstream.no" ],
+    "generic-epub-type_ss": [ "volume", "foreword", "introduction", "abstract", "chapter" ],
+    "metadata-meta-spenningsniv__ss": [ "5-24 kV", "47-132 kV" ]
+  },
+  "ebookId": "__test-vedlegg/master/f6f4382f5.xhtml",
+  "text": "YWFhYQ=="
+}

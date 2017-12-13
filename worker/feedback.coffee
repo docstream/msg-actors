@@ -26,7 +26,23 @@ console.log "Worker [[#{workerID}]] starting, PUBing back into [[#{pubName}]]"
 serialize = (obj) ->
   new Buffer (JSON.stringify obj)
 
+
+# FIXME
 validate = (body) ->
+
+  msg = (f) -> " ;;;; #{f} undef"
+
+  assert body.id, msg 'id'
+  assert body.wrkspc, msg 'wrkspc'
+  # --------------------------------------
+  assert body.from, msg 'from'
+  assert body.metadata["metadata-meta-feedback-receiver_ss"] , msg 'metadata-meta-feedback-receiver_ss'
+  assert body.ebookId , msg 'ebookId'
+  assert body.html or body.text , msg 'text or html'
+  console.log "Validated body ok!!"
+  body
+
+validatePreMailGun = (body) ->
 
   msg = (f) -> " ;;;; #{f} undef"
 
@@ -52,6 +68,20 @@ decodeMessage = (body) ->
   body.html = (decode body.html) if body.html
   console.log body
   body
+
+
+#FIXME
+transform = (body) ->
+  {
+    "id" : body.id,
+    "wrkspc" : body.wrkspc,
+    "from" : body.from,
+    "to" : (body.metadata["metadata-meta-feedback-receiver_ss"]).toString(),
+    "subject" : "Melding fra #{body.from} på dokument #{body.ebookId}",
+    "text" : body.text + "\nVennligst svar ved å trykke her: #{body.from}"
+  }
+
+
 
 mailgunPost = (body) ->
 
@@ -134,6 +164,8 @@ context.on 'ready', ->
           console.log " \\_ .id: #{b.id} "
           console.log " \\_ #{b.to} / #{b.subject} / #{b.wrkspc}"
         .map decodeMessage
+        .map transform
+        .map validatePreMailGun
         .map mailgunPost
         .flatMap H
         .doto (b) ->
