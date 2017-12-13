@@ -27,7 +27,6 @@ serialize = (obj) ->
   new Buffer (JSON.stringify obj)
 
 
-# FIXME
 validate = (body) ->
 
   msg = (f) -> " ;;;; #{f} undef"
@@ -39,7 +38,7 @@ validate = (body) ->
   assert body.metadata["metadata-meta-feedback-receiver_ss"] , msg 'metadata-meta-feedback-receiver_ss'
   assert body.ebookId , msg 'ebookId'
   assert body.html or body.text , msg 'text or html'
-  console.log "Validated body ok!!"
+  console.log "Validated body ok"
   body
 
 validatePreMailGun = (body) ->
@@ -53,7 +52,7 @@ validatePreMailGun = (body) ->
   assert body.to, msg 'to'
   assert body.subject, msg 'subject'
   assert body.html or body.text , msg 'text or html'
-  console.log "Validated body ok"
+  console.log "PreValidated body ok"
   body
 
 decodeMessage = (body) ->
@@ -70,7 +69,6 @@ decodeMessage = (body) ->
   body
 
 
-#FIXME
 transform = (body) ->
   {
     "id" : body.id,
