@@ -9,6 +9,7 @@ mailgunURL = require '../utils/mailgun-init'
 rp = require 'request-promise'
 assert = require 'assert'
 
+Mailchimp = require 'mailchimp-api-v3'
 
 qName = path.basename __filename, '.coffee'
 machineName = (require "os").hostname()
@@ -19,6 +20,9 @@ context = rabbitJs.createContext AMQP_URL
 
 pubName = "amq.topic"
 pubKeyPrefix = "#{qName}."
+
+# FIXME ikke hardkode
+mailchimpApiKey = 'cacea677a3ba666481517cbd3e9b256d-us16'
 
 console.log "Worker [[#{workerID}]] starting, PUBing back into [[#{pubName}]]"
 
@@ -39,24 +43,85 @@ validate = (body) ->
   body
 
 
-mailchimpPost = (body) ->
 
-  rp
-    json: yes # response JSONParsed
-    url: mailgunURL
-    method: 'post'
-    qs: body
+getEbookFromChunkId = (body) ->
+  chunkId = body.chunkId
+  chunkId_ = chunkId.split "/"
 
-  .then (respBody) ->
-    console.log "POST-RESP => "
-    console.log " \\_ id:",respBody.id
-    console.log " \\_ message:",respBody.message
-    body.mailgunQueue = respBody
-    Promise.resolve body
-  .catch (err) ->
-    console.error "rest: outch!"
-    err.body = body
-    Promise.reject err
+  body.ebook = chunkId_[0]
+
+  body
+
+
+# FIXME ikke hardkode
+# Returning existing or created list
+mailchimpList = (mailchimp, body, cb) ->
+  # Gets all lists
+  mailchimp.request {
+    method: 'get'
+    path: "/lists"
+  }, (err, result) ->
+    if err
+      cb err
+    else
+      listExist = _.find result.lists, (list) -> list.name == body.ebook
+      if listExist # List exist for ebook
+        cb null, listExist
+      else
+        # No list for ebook -> creating new list
+        mailchimp.request {
+          method: 'post'
+          path: "/lists"
+          body: {
+            "name" : body.ebook
+            "contact" : {
+              "company" : "Hafslund Nett",
+              "address1" : "Drammensveien 144",
+              "city" : "Oslo",
+              "state" : "Akershus",
+              "zip" : "0379",
+              "country" : "Norge"
+            },
+            "permission_reminder" : "Abonnert gjennom hafslund.readin.no",
+            "campaign_defaults" : {
+              "from_name" : "HafslundNett",
+              "from_email" : "noreply@hafslundnet.no",
+              "subject" : "Endring er gjort på #{body.ebook}",
+              "language" : "no"
+            },
+            "email_type_option" : true
+          }
+        }, (err2, result2) -> cb err2, result2
+
+
+
+# Subscribes to list
+mailchimpSubscribe = (body) ->
+  mailchimp = new Mailchimp(mailchimpApiKey);
+  console.log body
+
+  mailchimpList mailchimp, body, (err, res) ->
+    if err
+      console.log err
+    else
+      mailchimp.request {
+        method: 'post'
+        path: "/lists/#{res.id}/members"
+        body: {
+          "email_address" : body.from,
+          "status" : "subscribed"
+        }
+      }, (err2, result2) ->
+        console.log "err2: ", err2
+        console.log "result2: ", result2
+
+    body
+
+
+
+
+
+
 
 
 publishError = (err, push) ->
@@ -119,7 +184,8 @@ context.on 'ready', ->
           console.log "Keys: ", (_.keys b).join ', '
           console.log " \\_ .id: #{b.id} "
           console.log " \\_ #{b.to} / #{b.subject} / #{b.wrkspc}"
-        .map mailchimpPost
+        .map getEbookFromChunkId
+        .map mailchimpSubscribe
         .flatMap H
         .doto (b) ->
           wrk.ack()
