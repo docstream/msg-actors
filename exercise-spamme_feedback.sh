@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-export MAILGUN_KEY=blah
-export MAILCHIMP_API_KEY=blah
+export MAILGUN_KEY=blargh
+export MAILCHIMP_API_KEY=blargh
 
 ./node_modules/.bin/coffee worker/feedback.coffee &
 FEEDBACK_PID=$!
