@@ -5,7 +5,7 @@ H = require 'highland'
 rp = require 'request-promise' # mailgun
 rabbitJs = require 'rabbit.js'
 path = require 'path'
-mailgunURL = require '../utils/mailgun-init'
+mailchimpApiKey = require '../utils/mailchimp-init'
 rp = require 'request-promise'
 assert = require 'assert'
 
@@ -20,9 +20,6 @@ context = rabbitJs.createContext AMQP_URL
 
 pubName = "amq.topic"
 pubKeyPrefix = "#{qName}."
-
-# FIXME ikke hardkode
-mailchimpApiKey = 'cacea677a3ba666481517cbd3e9b256d-us16'
 
 console.log "Worker [[#{workerID}]] starting, PUBing back into [[#{pubName}]]"
 
@@ -39,6 +36,18 @@ validate = (body) ->
   # --------------------------------------
   assert body.from, msg 'from'
   assert body.chunkId, msg 'chunkId'
+  assert body.metadata, msg 'metadata'
+  assert body.metadata.company, msg 'company'
+  assert body.metadata.address, msg 'address'
+  assert body.metadata.city, msg 'city'
+  assert body.metadata.state, msg 'state'
+  assert body.metadata.zip, msg 'zip'
+  assert body.metadata.country, msg 'country'
+  assert body.metadata.permission_reminder, msg 'permission_reminder'
+  assert body.metadata.from_name, msg 'from_name'
+  assert body.metadata.from_email, msg 'from_email'
+  assert body.metadata.language, msg 'language'
+  assert body.metadata.email_type_option, msg 'email_type_option'
   console.log "Validated body ok"
   body
 
@@ -53,7 +62,6 @@ getEbookFromChunkId = (body) ->
   body
 
 
-# FIXME ikke hardkode
 # Returning existing or created list
 mailchimpList = (mailchimp, body, cb) ->
   # Gets all lists
@@ -75,34 +83,33 @@ mailchimpList = (mailchimp, body, cb) ->
           body: {
             "name" : body.ebook
             "contact" : {
-              "company" : "Hafslund Nett",
-              "address1" : "Drammensveien 144",
-              "city" : "Oslo",
-              "state" : "Akershus",
-              "zip" : "0379",
-              "country" : "Norge"
+              "company" : body.metadata.company,
+              "address1" : body.metadata.address,
+              "city" : body.metadata.city,
+              "state" : body.metadata.state,
+              "zip" : body.metadata.zip,
+              "country" : body.metadata.country
             },
-            "permission_reminder" : "Abonnert gjennom hafslund.readin.no",
+            "permission_reminder" : body.metadata.permission_reminder,
             "campaign_defaults" : {
-              "from_name" : "HafslundNett",
-              "from_email" : "noreply@hafslundnet.no",
+              "from_name" : body.metadata.from_name,
+              "from_email" : body.metadata.from_email,
               "subject" : "Endring er gjort på #{body.ebook}",
-              "language" : "no"
+              "language" : body.metadata.language
             },
-            "email_type_option" : true
+            "email_type_option" : body.metadata.email_type_option
           }
         }, (err2, result2) -> cb err2, result2
 
 
 
 # Subscribes to list
-mailchimpSubscribe = (body) ->
+mailchimpSubscribe = (body, cb) ->
   mailchimp = new Mailchimp(mailchimpApiKey);
-  console.log body
 
   mailchimpList mailchimp, body, (err, res) ->
     if err
-      console.log err
+      cb err
     else
       mailchimp.request {
         method: 'post'
@@ -112,14 +119,12 @@ mailchimpSubscribe = (body) ->
           "status" : "subscribed"
         }
       }, (err2, result2) ->
-        console.log "err2: ", err2
-        console.log "result2: ", result2
-
-    body
-
-
-
-
+        if err2 and err2.detail.match "already a list member"
+          cb null, "already a list member"
+        else if err2
+          cb err2
+        else
+          cb null, result2
 
 
 
@@ -183,10 +188,9 @@ context.on 'ready', ->
         .doto (b) ->
           console.log "Keys: ", (_.keys b).join ', '
           console.log " \\_ .id: #{b.id} "
-          console.log " \\_ #{b.to} / #{b.subject} / #{b.wrkspc}"
+          console.log " \\_ #{b.from} / #{b.chunkId} / #{b.wrkspc}"
         .map getEbookFromChunkId
-        .map mailchimpSubscribe
-        .flatMap H
+        .flatMap (H.wrapCallback mailchimpSubscribe)
         .doto (b) ->
           wrk.ack()
           console.log "SUCCESS [#{workerID}] ACK'd:", b.id
