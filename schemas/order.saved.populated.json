@@ -1,0 +1,99 @@
+{
+ "__v": 0,
+ "renewalMonth": 12,
+ "renewalDate": 20,
+ "prodNS": "dir",
+ "prodId": "/slash",
+ "payingAccountId": "5a3a3a61b8115219c8eae953",
+ "buyingEnduserId": "5a3a3a61b8115219c8eae952",
+ "domainName": "example.com",
+ "_id": "5a3a3a61b8115219c8eae957",
+ "events": [
+  {
+   "type": "new",
+   "triggeredByAccount": "5a3a3a61b8115219c8eae952",
+   "_id": "5a3a3a61b8115219c8eae958",
+   "created": "2017-12-20T10:24:33.027Z",
+   "id": "5a3a3a61b8115219c8eae958"
+  }
+ ],
+ "created": "2017-12-20T10:24:33.027Z",
+ "lastSignificantEvent": {
+  "type": "new",
+  "triggeredByAccount": "5a3a3a61b8115219c8eae952",
+  "_id": "5a3a3a61b8115219c8eae958",
+  "created": "2017-12-20T10:24:33.027Z",
+  "id": "5a3a3a61b8115219c8eae958"
+ },
+ "state": "new",
+ "triggeredBy": "5a3a3a61b8115219c8eae952",
+ "renewalMMDD": 1220,
+ "renewalStrategy": null,
+ "deactivatedByAdmin": false,
+ "expired": false,
+ "running": true,
+ "expireDateTime": "2018-12-20T00:00:00.000Z",
+ "legalStateTransitions": {
+  "pubAdm": [
+   "cancelled",
+   "frozen"
+  ],
+  "payer": [
+   "cancelled"
+  ]
+ },
+ "mustRenew": "?",
+ "payer__t": "Org",
+ "id": "5a3a3a61b8115219c8eae957",
+ "__topic": "order.saved.populated",
+ "payingOrg": {
+  "_id": "5a3a3a61b8115219c8eae953",
+  "name": "ORG-zzzyy",
+  "__v": 0,
+  "__t": "Org",
+  "billingAddress": {
+   "country": "Norway",
+   "addressLine1": "somwhere in time",
+   "city": "Skjetten",
+   "zip": "333331"
+  },
+  "created": "2017-12-20T10:24:33.019Z",
+  "pendingMembers": [
+   {
+    "email": "one@email.com",
+    "id": null
+   }
+  ],
+  "enduserMembers": [
+   {
+    "enduser": "5a3a3a61b8115219c8eae954",
+    "_id": "5a3a3a61b8115219c8eae955",
+    "id": "5a3a3a61b8115219c8eae955"
+   }
+  ],
+  "owners": [
+   "5a3a3a61b8115219c8eae956"
+  ],
+  "endusers": [
+   "5a3a3a61b8115219c8eae954"
+  ],
+  "pendingEmails": [],
+  "wasPendingEmails": [
+   {
+    "email": "one@email.com",
+    "id": null
+   }
+  ],
+  "enduserIdUnionSet": [
+   "5a3a3a61b8115219c8eae956",
+   "5a3a3a61b8115219c8eae954"
+  ],
+  "currentMemberCount": 2,
+  "id": "5a3a3a61b8115219c8eae953"
+ },
+ "_links" : {
+    "schema" : {
+      "href" : "r-reader/src/shop/events/index.coffee#patchSavedOrderMsg()"
+    }
+  }
+}
