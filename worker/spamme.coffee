@@ -5,7 +5,7 @@ H = require 'highland'
 rp = require 'request-promise' # mailgun
 rabbitJs = require 'rabbit.js'
 path = require 'path'
-mailchimp = require '../utils/mailchimp-init'
+chimpKeys = require '../utils/mailchimp-init'
 rp = require 'request-promise'
 assert = require 'assert'
 
@@ -61,14 +61,6 @@ getEbookFromChunkId = (body) ->
 
   body
 
-getWorkspaceFromWrkspc = (body) ->
-  wrkspc = body.wrkspc
-  wrkspc_ = wrkspc.split "."
-  body.Workspace = wrkspc_[0]
-
-  body
-
-
 # Returning existing or created list
 mailchimpList = (mailchimp, body, cb) ->
   # Gets all lists
@@ -85,37 +77,35 @@ mailchimpList = (mailchimp, body, cb) ->
       else
         # No list for ebook -> creating new list
         mailchimp.request {
-          method: 'post'
-          path: "/lists"
-          body: {
-            "name" : body.ebook
-            "contact" : {
-              "company" : body.metadata.company,
-              "address1" : body.metadata.address,
-              "city" : body.metadata.city,
-              "state" : body.metadata.state,
-              "zip" : body.metadata.zip,
-              "country" : body.metadata.country
-            },
-            "permission_reminder" : body.metadata.permission_reminder,
-            "campaign_defaults" : {
-              "from_name" : body.metadata.from_name,
-              "from_email" : body.metadata.from_email,
-              "subject" : "Endring er gjort på #{body.ebook}",
-              "language" : body.metadata.language
-            },
-            "email_type_option" : body.metadata.email_type_option
-          }
+          method : 'post'
+          path : "/lists"
+          body : 
+            name : body.ebook
+            contact : 
+              company : body.metadata.company
+              address1 : body.metadata.address
+              city : body.metadata.city
+              state : body.metadata.state
+              zip : body.metadata.zip
+              country : body.metadata.country
+            
+            permission_reminder : body.metadata.permission_reminder
+            campaign_defaults : 
+              from_name : body.metadata.from_name
+              from_email : body.metadata.from_email
+              subject : "Endring er gjort på #{body.ebook}"
+              language : body.metadata.language
+            
+            email_type_option : body.metadata.email_type_option
+          
         }, (err2, result2) -> cb err2, result2
 
 
 
 # Subscribes to list
 mailchimpSubscribe = (body, cb) ->
-  mailchimpApiKey = mailchimp.api_key body.Workspace
-  console.log "*******************"
-  console.log mailchimpApiKey
-  mailchimp = new Mailchimp(mailchimpApiKey);
+
+  mailchimp = new Mailchimp (chimpKeys body.wrkspc)
 
   mailchimpList mailchimp, body, (err, res) ->
     if err
@@ -124,10 +114,9 @@ mailchimpSubscribe = (body, cb) ->
       mailchimp.request {
         method: 'post'
         path: "/lists/#{res.id}/members"
-        body: {
-          "email_address" : body.from,
+        body: 
+          "email_address" : body.from
           "status" : "subscribed"
-        }
       }, (err2, result2) ->
         if err2 and err2.detail.match "already a list member"
           cb null, "already a list member"
@@ -200,7 +189,6 @@ context.on 'ready', ->
           console.log " \\_ .id: #{b.id} "
           console.log " \\_ #{b.from} / #{b.chunkId} / #{b.wrkspc}"
         .map getEbookFromChunkId
-        .map getWorkspaceFromWrkspc
         .flatMap (H.wrapCallback mailchimpSubscribe)
         .doto (b) ->
           wrk.ack()

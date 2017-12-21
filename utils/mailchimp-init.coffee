@@ -5,6 +5,7 @@ _ = require 'lodash'
 api_keys = {}
 
 console.log "Will now loop each MAILCHIMP_KEY_* env(s) .."
+
 _.forEach process.env, (val,key) ->
   if key.match /^MAILCHIMP_KEY_/
     console.log "-+--> Found env [#{key}] :"
@@ -12,7 +13,7 @@ _.forEach process.env, (val,key) ->
     console.log "SUFFIX:: ", suffix
     console.log "val:: ", val
     console.log "api_keys:: ", api_keys
-    api_keys = parse val,api_keys,suffix
+    api_keys = parse val, api_keys, suffix
 
 
 console.log "-----------------------------"
@@ -23,5 +24,5 @@ if (_.keys api_keys).length == 0
   process.exit 1
 
 
-module.exports =
-  api_key: (key) -> api_keys[key]
+module.exports = (key) -> 
+  api_keys[key]
