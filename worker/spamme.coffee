@@ -8,6 +8,7 @@ path = require 'path'
 chimpKeys = require '../utils/mailchimp-init'
 rp = require 'request-promise'
 assert = require 'assert'
+url = require 'url'
 
 Mailchimp = require 'mailchimp-api-v3'
 
@@ -15,7 +16,7 @@ qName = path.basename __filename, '.coffee'
 machineName = (require "os").hostname()
 workerID = "#{qName}:#{machineName}:#{process.pid}"
 
-
+console.log "AMQP_URL .host ===>", (url.parse AMQP_URL).host
 context = rabbitJs.createContext AMQP_URL
 
 pubName = "amq.topic"
