@@ -18,6 +18,7 @@ test:
       --entrypoint '/bin/bash'
       $AWS_ECR/$APP:$CIRCLE_BRANCH 
       exercise.sh
+    - docker logs queue
       
 
 deployment:
