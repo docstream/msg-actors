@@ -5,7 +5,7 @@ H = require 'highland'
 rp = require 'request-promise' # mailgun
 rabbitJs = require 'rabbit.js'
 path = require 'path'
-mailchimpApiKey = require '../utils/mailchimp-init'
+mailchimp = require '../utils/mailchimp-init'
 rp = require 'request-promise'
 assert = require 'assert'
 
@@ -61,6 +61,13 @@ getEbookFromChunkId = (body) ->
 
   body
 
+getWorkspaceFromWrkspc = (body) ->
+  wrkspc = body.wrkspc
+  wrkspc_ = wrkspc.split "."
+  body.Workspace = wrkspc_[0]
+
+  body
+
 
 # Returning existing or created list
 mailchimpList = (mailchimp, body, cb) ->
@@ -105,6 +112,9 @@ mailchimpList = (mailchimp, body, cb) ->
 
 # Subscribes to list
 mailchimpSubscribe = (body, cb) ->
+  mailchimpApiKey = mailchimp.api_key body.Workspace
+  console.log "*******************"
+  console.log mailchimpApiKey
   mailchimp = new Mailchimp(mailchimpApiKey);
 
   mailchimpList mailchimp, body, (err, res) ->
@@ -190,6 +200,7 @@ context.on 'ready', ->
           console.log " \\_ .id: #{b.id} "
           console.log " \\_ #{b.from} / #{b.chunkId} / #{b.wrkspc}"
         .map getEbookFromChunkId
+        .map getWorkspaceFromWrkspc
         .flatMap (H.wrapCallback mailchimpSubscribe)
         .doto (b) ->
           wrk.ack()
