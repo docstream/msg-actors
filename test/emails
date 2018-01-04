@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+
+if [ -z "$AMQP_URL" ]; then
+	echo AMQP_URL not set
+	exit 1
+fi
+
+EXCH=$1
+
+if [ -z "$EXCH" ]; then
+	echo exch not set as argument
+	exit 1
+fi
+
+alias amq_pub="amqp-publish -u $AMQP_URL -e $EXCH"
