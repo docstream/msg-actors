@@ -12,12 +12,13 @@ dependencies:
 
 test:
   override:
-    - docker run -d --name queue rabbitmq:3
+    - docker run -d --name queue rabbitmq:3 ; sleep 20
     - docker run --rm -ti
       --link queue:queue
       --entrypoint '/bin/bash'
       $AWS_ECR/$APP:$CIRCLE_BRANCH 
       exercise.sh
+    - docker logs queue
       
 
 deployment:

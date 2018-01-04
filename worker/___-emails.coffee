@@ -8,13 +8,14 @@ path = require 'path'
 mailgunURL = require '../utils/mailgun-init'
 rp = require 'request-promise'
 assert = require 'assert'
+url = require 'url'
 
 
 qName = path.basename __filename, '.coffee'
 machineName = (require "os").hostname()
 workerID = "#{qName}:#{machineName}:#{process.pid}"
 
-
+console.log "AMQP_URL .host ===>", (url.parse AMQP_URL).host
 context = rabbitJs.createContext AMQP_URL
 
 pubName = "amq.topic"

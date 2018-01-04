@@ -7,6 +7,7 @@ rp = require 'request-promise'
 rabbitJs = require 'rabbit.js'
 _ = require 'lodash'
 H = require 'highland'
+url = require 'url'
 
 assert gitlab.urls.base, "gitlab.urls.base empty!"
 
@@ -16,7 +17,9 @@ workerID = "#{qName}:#{machineName}:#{process.pid}"
 pubName = "amq.topic"
 pubKeyPrefix = "gitlab.#{qName.replace /s$/,''}."
 
+console.log "AMQP_URL .host ===>", (url.parse AMQP_URL).host
 context = rabbitJs.createContext AMQP_URL
+
 console.log "Worker [[#{workerID}]] starting, PUBing back into [[#{pubName}]]"
 
 # NOTE Schema ref in schemas DIR
