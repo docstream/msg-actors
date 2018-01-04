@@ -12,6 +12,7 @@
   "author": "dynnamitt",
   "dependencies": {
     "async": "^2.0.1",
+    "auth0-man-token": "github:docstream/auth0-manager-token",
     "coffee-script": "^1.10.0",
     "figlet": "^1.2.0",
     "hare": "^1.0.0",
