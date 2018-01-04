@@ -1,17 +1,22 @@
 qs = require 'querystring'
 _ = require 'lodash'
 
+# mutates [state] w parsed object (from rawdata)
+module.exports = parse = (rawdata,state,suffix) ->
 
-module.exports = parse = (rawdata,tokens,suffix) ->
+  if _.isArray state
+    merge = _.concat
+  else
+    merge = _.assignIn
 
   try
     if rawdata.trim().match /^\{/
       console.log "  \\_ JSON.parsing #{suffix} .."
-      _.assignIn tokens,(JSON.parse rawdata)
+      state = merge state, (JSON.parse rawdata)
     else
       console.log "  \\_ QS.parsing #{suffix} .."
-      _.assignIn tokens,(qs.parse rawdata.trim())
+      state = merge state, (qs.parse rawdata.trim())
   catch err
     console.error "PARSE-ERR:\n",err
 
-  tokens
+  state

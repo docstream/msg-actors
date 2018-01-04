@@ -1,6 +1,11 @@
 # gitlab-workerS
 
-nodejs queue workers/actors
+## nodejs queue workers/actors
+
+NB node v8! 
+
+    curl -sL https://deb.nodesource.com/setup_8.x | sudo -E bash -
+    
 
 always set AMQP_URL env (default = amqp://127.0.0.1:5672)
 
