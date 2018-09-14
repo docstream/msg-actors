@@ -12,6 +12,6 @@ aws configure set default.region eu-central-1
 aws configure set default.output json
 
 # logins here only last 12h
-eval $(aws ecr get-login --region eu-central-1)
+eval $(aws ecr get-login --no-include-email --region eu-central-1)
 
 docker push $AWS_ECR/$APP:$CIRCLE_BRANCH

@@ -67,7 +67,7 @@ mailchimpList = (mailchimp, body, cb) ->
   # Gets all lists
   mailchimp.request {
     method: 'get'
-    path: "/lists"
+    path: "/lists?count=1000000"
   }, (err, result) ->
     if err
       cb err
@@ -80,25 +80,25 @@ mailchimpList = (mailchimp, body, cb) ->
         mailchimp.request {
           method : 'post'
           path : "/lists"
-          body : 
+          body :
             name : body.ebook
-            contact : 
+            contact :
               company : body.metadata.company
               address1 : body.metadata.address
               city : body.metadata.city
               state : body.metadata.state
               zip : body.metadata.zip
               country : body.metadata.country
-            
+
             permission_reminder : body.metadata.permission_reminder
-            campaign_defaults : 
+            campaign_defaults :
               from_name : body.metadata.from_name
               from_email : body.metadata.from_email
               subject : "Endring er gjort på #{body.ebook}"
               language : body.metadata.language
-            
+
             email_type_option : body.metadata.email_type_option
-          
+
         }, (err2, result2) -> cb err2, result2
 
 
@@ -115,7 +115,7 @@ mailchimpSubscribe = (body, cb) ->
       mailchimp.request {
         method: 'post'
         path: "/lists/#{res.id}/members"
-        body: 
+        body:
           "email_address" : body.from
           "status" : "subscribed"
       }, (err2, result2) ->
