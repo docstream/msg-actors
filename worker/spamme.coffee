@@ -9,7 +9,7 @@ chimpKeys = require '../utils/mailchimp-init'
 rp = require 'request-promise'
 assert = require 'assert'
 url = require 'url'
-
+md5 = require 'md5'
 Mailchimp = require 'mailchimp-api-v3'
 
 qName = path.basename __filename, '.coffee'
@@ -22,45 +22,57 @@ context = rabbitJs.createContext AMQP_URL
 pubName = "amq.topic"
 pubKeyPrefix = "#{qName}."
 
+REMOVE = "removeme"
+ADD = "spamme"
+
 console.log "Worker [[#{workerID}]] starting, PUBing back into [[#{pubName}]]"
+
 
 # util
 serialize = (obj) ->
   new Buffer (JSON.stringify obj)
 
 validate = (body) ->
-
   msg = (f) -> " ;;;; #{f} undef"
 
   assert body.id, msg 'id'
   assert body.wrkspc, msg 'wrkspc'
-  # --------------------------------------
-  assert body.from, msg 'from'
-  assert body.chunkId, msg 'chunkId'
-  assert body.metadata, msg 'metadata'
-  assert body.metadata.company, msg 'company'
-  assert body.metadata.address, msg 'address'
-  assert body.metadata.city, msg 'city'
-  assert body.metadata.state, msg 'state'
-  assert body.metadata.zip, msg 'zip'
-  assert body.metadata.country, msg 'country'
-  assert body.metadata.permission_reminder, msg 'permission_reminder'
-  assert body.metadata.from_name, msg 'from_name'
-  assert body.metadata.from_email, msg 'from_email'
-  assert body.metadata.language, msg 'language'
-  assert body.metadata.email_type_option, msg 'email_type_option'
+  assert body.action, msg 'action'
+
+  if body.action == REMOVE
+    assert body.email, msg 'email'
+    assert body.ebook, msg 'ebook'
+  else if body.action == ADD
+    # --------------------------------------
+    assert body.from, msg 'from'
+    assert body.chunkId, msg 'chunkId'
+    assert body.metadata, msg 'metadata'
+    assert body.metadata.company, msg 'company'
+    assert body.metadata.address, msg 'address'
+    assert body.metadata.city, msg 'city'
+    assert body.metadata.state, msg 'state'
+    assert body.metadata.zip, msg 'zip'
+    assert body.metadata.country, msg 'country'
+    assert body.metadata.permission_reminder, msg 'permission_reminder'
+    assert body.metadata.from_name, msg 'from_name'
+    assert body.metadata.from_email, msg 'from_email'
+    assert body.metadata.language, msg 'language'
+    assert body.metadata.email_type_option, msg 'email_type_option'
+    # --------------------------------------
+
   console.log "Validated body ok"
   body
 
 
 
 getEbookFromChunkId = (body) ->
-  chunkId = body.chunkId
-  chunkId_ = chunkId.split "/"
-
-  body.ebook = chunkId_[0]
-
-  body
+  if body.ebook
+    body
+  else
+    chunkId = body.chunkId
+    chunkId_ = chunkId.split "/"
+    body.ebook = chunkId_[0]
+    body
 
 # Returning existing or created list
 mailchimpList = (mailchimp, body, cb) ->
@@ -75,6 +87,8 @@ mailchimpList = (mailchimp, body, cb) ->
       listExist = _.find result.lists, (list) -> list.name == body.ebook
       if listExist # List exist for ebook
         cb null, listExist
+      else if body.action == REMOVE
+        cb "List not found"
       else
         # No list for ebook -> creating new list
         mailchimp.request {
@@ -103,11 +117,27 @@ mailchimpList = (mailchimp, body, cb) ->
 
 
 
-# Subscribes to list
-mailchimpSubscribe = (body, cb) ->
 
-  mailchimp = new Mailchimp (chimpKeys body.wrkspc)
 
+mailchimpRemove = (mailchimp, body, cb) ->
+  hashedEmail = md5 body.email
+
+  mailchimpList mailchimp, body, (err, res) ->
+    if err
+      cb err
+    else
+      mailchimp.request {
+        method: 'delete'
+        path: "/lists/#{res.id}/members/#{hashedEmail}"
+      }, (err2, result2) ->
+        if err2
+          cb err2
+        else
+          cb null, result2
+
+
+
+mailchimpSubscribe = (mailchimp, body, cb) ->
   mailchimpList mailchimp, body, (err, res) ->
     if err
       cb err
@@ -125,6 +155,25 @@ mailchimpSubscribe = (body, cb) ->
           cb err2
         else
           cb null, result2
+
+
+
+
+# Actions for mailchimp. Subscribes to list or removes from list
+mailchimpAction = (body, cb) ->
+  mailchimp = new Mailchimp (chimpKeys body.wrkspc)
+
+  console.log "Action is #{body.action}"
+
+  if body.action == REMOVE
+    mailchimpRemove mailchimp, body, (err, res) ->
+      cb err, res
+  else if body.action == ADD
+    mailchimpSubscribe mailchimp, body, (err, res) ->
+      cb err, res
+  else
+    cb "WRONG ACTION"
+
 
 
 
@@ -190,7 +239,7 @@ context.on 'ready', ->
           console.log " \\_ .id: #{b.id} "
           console.log " \\_ #{b.from} / #{b.chunkId} / #{b.wrkspc}"
         .map getEbookFromChunkId
-        .flatMap (H.wrapCallback mailchimpSubscribe)
+        .flatMap (H.wrapCallback mailchimpAction)
         .doto (b) ->
           wrk.ack()
           console.log "SUCCESS [#{workerID}] ACK'd:", b.id
