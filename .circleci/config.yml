@@ -32,7 +32,8 @@ jobs:
     # - image: circleci/build-image:ubuntu-14.04-XXL-upstart-1189-5614f37
     #   command: /sbin/init
 
-    machine: true
+    machine:
+      image: ubuntu-2004:202201-02
 
     steps:
     # Machine Setup
